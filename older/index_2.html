@@ -89,19 +89,18 @@ a:focus-visible, button:focus-visible{
   height:auto;
   align-self:center;
   pointer-events:none;
-  filter:drop-shadow(0 4px 6px rgba(20,21,26,.16));
 }
 .rig-svg line, .rig-svg rect{ vector-effect:non-scaling-stroke; }
-.rail{ stroke:var(--occupied); stroke-width:4; opacity:.6; stroke-linecap:round; }
+.rail{ stroke:var(--occupied); stroke-width:2; opacity:.4; }
 .ground{
-  stroke:var(--occupied); stroke-width:4; opacity:.5;
-  stroke-dasharray:11 9; stroke-linecap:round;
+  stroke:var(--occupied); stroke-width:2; opacity:.4;
+  stroke-dasharray:10 8;
   animation:conveyor 15s cubic-bezier(.5,0,.4,1) infinite;
 }
-.carriage{ fill:var(--free-hi); stroke:var(--occupied); stroke-width:3.5; opacity:.75; }
-.mast{ fill:var(--occupied); opacity:.55; }
-.block{ fill:var(--free-hi); stroke:var(--occupied); stroke-width:3.5; opacity:.8; }
-.grip{ fill:var(--frontier); opacity:1; }
+.carriage{ fill:var(--free); stroke:var(--occupied); stroke-width:2; opacity:.55; }
+.mast{ fill:var(--occupied); opacity:.4; }
+.block{ fill:var(--free-hi); stroke:var(--occupied); stroke-width:2; opacity:.6; }
+.grip{ fill:var(--frontier); opacity:.9; }
 
 .head    { animation:headX 15s cubic-bezier(.45,0,.35,1) infinite; }
 .tool    { animation:toolY 15s cubic-bezier(.45,0,.35,1) infinite; }
@@ -244,9 +243,6 @@ a:focus-visible, button:focus-visible{
 
 /* ---- Project entries ---- */
 .entry{
-  display:flex;
-  align-items:flex-start;
-  gap:clamp(1.25rem, 3.5vw, 2.75rem);
   border-left:2px solid transparent;
   padding-left:clamp(.85rem, 2vw, 1.4rem);
   margin-bottom:2.75rem;
@@ -254,45 +250,6 @@ a:focus-visible, button:focus-visible{
 }
 .entry:last-child{ margin-bottom:0; }
 .entry:hover, .entry:focus-within{ border-left-color:var(--frontier); }
-
-.entry-content{ flex:1 1 auto; min-width:0; }
-
-/* ---- Media panel: gif/screenshot placeholder ---- */
-.entry-media{
-  flex:0 0 clamp(12rem, 30vw, 17rem);
-  width:clamp(12rem, 30vw, 17rem);
-  aspect-ratio:4 / 3;
-  align-self:flex-start;
-  overflow:hidden;
-  border:1px solid rgba(142,142,135,.35);
-  background:
-    repeating-linear-gradient(45deg, rgba(142,142,135,.14) 0 8px, transparent 8px 16px),
-    var(--free-hi);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:.6rem;
-}
-.entry-media span{
-  font-family:var(--mono);
-  font-size:.62rem;
-  letter-spacing:.09em;
-  text-transform:uppercase;
-  color:var(--unknown);
-}
-.entry-media img,
-.entry-media video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-@media (max-width:700px){
-  .entry{ flex-direction:column; }
-  .entry-media{ width:100%; flex-basis:auto; aspect-ratio:16 / 9; }
-}
 
 .entry-head{
   display:flex; flex-wrap:wrap; align-items:baseline;
@@ -386,13 +343,13 @@ a:focus-visible, button:focus-visible{
   color:var(--unknown);
 }
 
-/* ---- Meteors drifting behind the name, top quadrant only ---- */
+/* ---- Sparks drifting across the page ---- */
 .sky{
-  position:absolute;
+  position:fixed;
   inset:0;
   overflow:hidden;
   pointer-events:none;
-  z-index:0;
+  z-index:-1;
 }
 .shot{
   position:absolute;
@@ -447,48 +404,6 @@ a:focus-visible, button:focus-visible{
 .hero .lede{ animation:rise .5s .12s ease both; }
 .hero .contact{ animation:rise .5s .18s ease both; }
 
-/* ---- Scroll scrub: reveal progress is driven directly by scroll position ---- */
-.reveal-item{
-  --p: 0;
-  opacity: var(--p);
-  transform: translateY(calc((1 - var(--p)) * 34px));
-  filter: blur(calc((1 - var(--p)) * 4px));
-  transition: opacity 70ms linear, transform 70ms linear, filter 70ms linear;
-  will-change:opacity, transform, filter;
-}
-
-/* ---- Frontier scan rail: a vertical "explored so far" readout ---- */
-.scan-rail{
-  position:fixed;
-  top:0; right:0; bottom:0;
-  width:5px;
-  z-index:60;
-  background:repeating-linear-gradient(to bottom, var(--unknown) 0 9px, transparent 9px 15px);
-  opacity:.4;
-  pointer-events:none;
-}
-.scan-fill{
-  position:absolute;
-  top:0; left:0; width:100%;
-  height:0%;
-  background:linear-gradient(to bottom, var(--frontier), var(--glint));
-  box-shadow:0 0 14px rgba(206,42,22,.65);
-}
-.scan-marker{
-  position:absolute;
-  left:50%; top:0%;
-  width:9px; height:9px;
-  margin:-4.5px 0 0 -4.5px;
-  border-radius:50%;
-  background:var(--frontier);
-  box-shadow:0 0 10px 3px rgba(206,42,22,.55);
-}
-@media (max-width:700px){ .scan-rail{ display:none; } }
-
-@media (prefers-reduced-motion: reduce){
-  .reveal-item{ --p:1 !important; filter:none !important; }
-}
-
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{ animation:none !important; transition:none !important; }
 }
@@ -496,19 +411,15 @@ a:focus-visible, button:focus-visible{
 </head>
 <body>
 
-<div class="scan-rail" aria-hidden="true">
-  <div class="scan-fill"><div class="scan-marker"></div></div>
+<div class="sky" aria-hidden="true">
+  <span class="shot" style="top:-6%;  left:-14%; width:16vmin; animation-duration:11s; animation-delay:0s"></span>
+  <span class="shot" style="top:12%;  left:-22%; width:11vmin; animation-duration:14s; animation-delay:3.5s"></span>
+  <span class="shot" style="top:-12%; left:22%;  width:19vmin; animation-duration:9s;  animation-delay:6.5s"></span>
+  <span class="shot" style="top:34%;  left:-26%; width:13vmin; animation-duration:16s; animation-delay:10s"></span>
+  <span class="shot" style="top:-9%;  left:58%;  width:15vmin; animation-duration:13s; animation-delay:15s"></span>
 </div>
 
 <header class="hero">
-  <div class="sky" aria-hidden="true">
-    <span class="shot" style="top:-6%;  left:-14%; width:16vmin; animation-duration:11s; animation-delay:0s"></span>
-    <span class="shot" style="top:12%;  left:-22%; width:11vmin; animation-duration:14s; animation-delay:3.5s"></span>
-    <span class="shot" style="top:-12%; left:22%;  width:19vmin; animation-duration:9s;  animation-delay:6.5s"></span>
-    <span class="shot" style="top:34%;  left:-26%; width:13vmin; animation-duration:16s; animation-delay:10s"></span>
-    <span class="shot" style="top:-9%;  left:58%;  width:15vmin; animation-duration:13s; animation-delay:15s"></span>
-  </div>
-
   <svg class="hero-map" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
       <pattern id="occupancy" width="14" height="14" patternUnits="userSpaceOnUse">
@@ -523,9 +434,8 @@ a:focus-visible, button:focus-visible{
     <p class="eyebrow">Robotics &middot; Urbana&ndash;Champaign</p>
     <h1 class="name"><span class="hl">Anv</span>esh<br><span class="hl">Red</span>dy<span class="dot">.</span><svg class="spark" style="left:5%;  top:.06em;  animation-delay:0s"    viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:43%; top:.34em;  animation-delay:1.6s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:80%; top:.04em;  animation-delay:3.2s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:18%; top:1.06em; animation-delay:4.5s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:64%; top:1.3em;  animation-delay:5.8s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg></h1>
     <p class="lede">
-      Engineering mechanics student at UIUC building autonomous navigation and
-      manipulation systems &mdash; mapping unknown space, picking things up, and
-      designing the mechanisms that do it.
+      Engineering mechanics student at UIUC interested in autonomous navigation and
+      robotic manipulation. 
     </p>
     <ul class="contact">
       <li><a href="mailto:YOUR@EMAIL.HERE">email</a></li>
@@ -552,12 +462,12 @@ a:focus-visible, button:focus-visible{
       <g clip-path="url(#railclip)">
         <g class="head">
           <g class="tool">
-            <rect class="mast" x="-4.5" y="-200" width="9" height="200"/>
-            <rect class="grip palm" x="-27" y="-5" width="54" height="9"/>
-            <rect class="grip finger-l" x="-27" y="3" width="8" height="26"/>
-            <rect class="grip finger-r" x="19" y="3" width="8" height="26"/>
+            <rect class="mast" x="-2.5" y="-200" width="5" height="200"/>
+            <rect class="grip palm" x="-25" y="-4" width="50" height="6"/>
+            <rect class="grip finger-l" x="-25" y="2" width="6" height="24"/>
+            <rect class="grip finger-r" x="19" y="2" width="6" height="24"/>
           </g>
-          <rect class="carriage" x="-22" y="8" width="44" height="20"/>
+          <rect class="carriage" x="-20" y="10" width="40" height="16"/>
         </g>
       </g>
     </svg>
@@ -568,70 +478,61 @@ a:focus-visible, button:focus-visible{
 
 <main>
   <section class="section wrap" aria-labelledby="work">
-    <p class="section-label reveal-item" id="work">Selected work</p>
+    <p class="section-label" id="work">Selected work</p>
 
-    <article class="entry reveal-item d1">
-      <div class="entry-content">
-        <div class="entry-head">
-          <h2 class="entry-title">Autonomous frontier exploration</h2>
-          <span class="status live">Working</span>
-        </div>
-        <p>
-          A mobile robot that maps an unknown environment on its own. It runs SLAM
-          while a custom frontier-search node finds the boundary between mapped and
-          unmapped space, ranks candidate frontiers, and hands goals to the navigation
-          stack until there is nothing left to explore.
-        </p>
-        <p>
-          The frontier node is written from scratch rather than using explore_lite,
-          which meant owning the detection, clustering, and goal-selection logic
-          end to end.
-        </p>
-        <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
-        <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Autonomous frontier exploration</h2>
+        <span class="status live">Working</span>
       </div>
-      <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      <p>
+        A mobile robot that maps an unknown environment on its own. It runs SLAM
+        while a custom frontier-search node finds the boundary between mapped and
+        unmapped space, ranks candidate frontiers, and hands goals to the navigation
+        stack until there is nothing left to explore.
+      </p>
+      <p>
+        The frontier node is written from scratch rather than using explore_lite,
+        which meant owning the detection, clustering, and goal-selection logic
+        end to end.
+      </p>
+      <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
+      <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
     </article>
 
-    <article class="entry reveal-item d2">
-      <div class="entry-content">
-        <div class="entry-head">
-          <h2 class="entry-title">Robot drawing system on a UR3</h2>
-          <span class="status live">Working</span>
-        </div>
-        <p>
-          A UR3 arm that reproduces an image by drawing it. An image-processing
-          pipeline runs edge detection to reduce a photograph to a set of contours,
-          the contours are converted to waypoints in the arm's workspace, and inverse
-          kinematics turns those into joint trajectories the arm executes with a pen.
-        </p>
-        <p>
-          The interesting part is everything between the two ends: deciding which
-          edges are worth drawing, ordering strokes so the arm isn't crossing its own
-          work, and keeping the pen loaded against a surface that is never quite
-          where the model says it is.
-        </p>
-        <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
-        <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Robot drawing system on a UR3</h2>
+        <span class="status live">Working</span>
       </div>
-      <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      <p>
+        A UR3 arm that reproduces an image by drawing it. An image-processing
+        pipeline runs edge detection to reduce a photograph to a set of contours,
+        the contours are converted to waypoints in the arm's workspace, and inverse
+        kinematics turns those into joint trajectories the arm executes with a pen.
+      </p>
+      <p>
+        The interesting part is everything between the two ends: deciding which
+        edges are worth drawing, ordering strokes so the arm isn't crossing its own
+        work, and keeping the pen loaded against a surface that is never quite
+        where the model says it is.
+      </p>
+      <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
+      <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
     </article>
 
-    <article class="entry reveal-item d3">
-      <div class="entry-content">
-        <div class="entry-head">
-          <h2 class="entry-title">Compliant gripper</h2>
-          <span class="status">In progress</span>
-        </div>
-        <p>
-          Designing and building a gripper mechanism, then running finite element
-          analysis on the grasp forces to make the fingers compliant &mdash; letting
-          the structure absorb positioning error instead of demanding perfect
-          alignment from the controller.
-        </p>
-        <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; tolerance fitting</p>
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Compliant gripper</h2>
+        <span class="status">In progress</span>
       </div>
-      <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      <p>
+        Designing and building a gripper mechanism, then running finite element
+        analysis on the grasp forces to make the fingers compliant &mdash; letting
+        the structure absorb positioning error instead of demanding perfect
+        alignment from the controller.
+      </p>
+      <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; tolerance fitting</p>
     </article>
 
   </section>
@@ -639,25 +540,25 @@ a:focus-visible, button:focus-visible{
   <hr class="frontier-rule">
 
   <section class="section wrap" aria-labelledby="bg">
-    <p class="section-label reveal-item" id="bg">Background</p>
+    <p class="section-label" id="bg">Background</p>
     <dl class="facts">
-      <div class="reveal-item d1">
+      <div>
         <dt>University</dt>
         <dd>University of Illinois Urbana&ndash;Champaign</dd>
       </div>
-      <div class="reveal-item d2">
+      <div>
         <dt>Degree</dt>
         <dd>B.S. Engineering Mechanics, robotics concentration &middot; CS minor</dd>
       </div>
-      <div class="reveal-item d3">
+      <div>
         <dt>Graduating</dt>
         <dd>December 2027 &middot; GPA 3.73</dd>
       </div>
-      <div class="reveal-item d4">
+      <div>
         <dt>Tools</dt>
         <dd>ROS 2, Gazebo, Python, C++, MATLAB, Fusion 360, FEA, Linux</dd>
       </div>
-      <div class="reveal-item d5">
+      <div>
         <dt>Looking for</dt>
         <dd>Robotics internship, Summer 2027</dd>
       </div>
@@ -665,101 +566,39 @@ a:focus-visible, button:focus-visible{
   </section>
 
   <hr class="frontier-rule">
-
+<!-- This is an HTML comment 
   <section class="section wrap" aria-labelledby="off">
-    <p class="section-label reveal-item" id="off">Off the clock</p>
+    <p class="section-label" id="off">Off the clock</p>
     <ul class="interests">
-      <li class="reveal-item d1">
+      <li>
         <h3>Tennis</h3>
         <p>On court regularly &mdash; the one hobby that has survived every semester.</p>
       </li>
-      <li class="reveal-item d2">
+      <li>
         <h3>Lifting</h3>
         <p>Progressive overload, tracked. Slow, boring, and it works.</p>
       </li>
-      <li class="reveal-item d3">
+      <li>
         <h3>Markets</h3>
         <p>Follow financial markets closely, mostly for the same reason I like control systems: feedback loops and how badly people model risk.</p>
       </li>
-      <li class="reveal-item d4">
+      <li>
         <h3>Startups</h3>
         <p>Read a lot about venture and early-stage companies &mdash; specifically how research gets out of a lab and into something people actually use.</p>
       </li>
-      <li class="reveal-item d5">
+      <li>
         <h3>Film</h3>
         <p>Watch more of it than I should. Drawn to films that are doing something structurally strange.</p>
       </li>
     </ul>
   </section>
 </main>
-
+-->
 <hr class="frontier-rule">
 
 <footer class="foot wrap">
   <p>anv.red &middot; Anvesh Reddy</p>
 </footer>
-
-<script>
-(function(){
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var items = Array.prototype.slice.call(document.querySelectorAll('.reveal-item'));
-
-  if(reduced){
-    items.forEach(function(el){ el.style.setProperty('--p', 1); });
-  } else {
-    var ticking = false;
-
-    var update = function(){
-      ticking = false;
-      var vh = window.innerHeight;
-      var revealLine = vh * 0.85;   /* where items start resolving into view */
-      items.forEach(function(el){
-        var rect = el.getBoundingClientRect();
-        var span = Math.max(rect.height * 0.6, 60) + 60;
-        var p = (revealLine - rect.top) / span;
-        p = Math.max(0, Math.min(1, p));
-        el.style.setProperty('--p', p.toFixed(3));
-      });
-    };
-
-    var onScroll = function(){
-      if(!ticking){
-        ticking = true;
-        requestAnimationFrame(update);
-      }
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-  }
-
-  /* Frontier scan rail: fills top-to-bottom as you explore the page */
-  var fill = document.querySelector('.scan-fill');
-  if(fill){
-    var onScroll = function(){
-      var doc = document.documentElement;
-      var top = doc.scrollTop || document.body.scrollTop;
-      var max = (doc.scrollHeight || document.body.scrollHeight) - doc.clientHeight;
-      var pct = max > 0 ? Math.min(1, Math.max(0, top / max)) : 0;
-      fill.style.height = (pct * 100) + '%';
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-  }
-
-  /* Subtle parallax drift on the hero occupancy grid */
-  var heroMap = document.querySelector('.hero-map');
-  if(heroMap && !reduced){
-    var onParallax = function(){
-      var y = window.scrollY || window.pageYOffset;
-      heroMap.style.transform = 'translateY(' + (y * 0.12) + 'px)';
-    };
-    window.addEventListener('scroll', onParallax, { passive: true });
-  }
-})();
-</script>
 
 </body>
 </html>
