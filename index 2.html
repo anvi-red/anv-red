@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anvesh Reddy — Robotics</title>
+<meta name="description" content="Anvesh Reddy — robotics engineering student at UIUC. Autonomous navigation, manipulation, and bio-inspired mechanism design.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ---- Palette derived from a SLAM occupancy grid ----
+   free space = background, occupied = text,
+   unknown = muted, frontier = red (the thing worth walking toward) */
+:root{
+  --free:      #E7E7E2;
+  --free-hi:   #F3F3EF;
+  --unknown:   #8E8E87;
+  --occupied:  #14151A;
+  --frontier:  #CE2A16;
+
+  --display: "Archivo", system-ui, sans-serif;
+  --body:    "IBM Plex Sans", system-ui, sans-serif;
+  --mono:    "IBM Plex Mono", ui-monospace, monospace;
+
+  --gutter: clamp(1.25rem, 5vw, 4.5rem);
+  --measure: 62ch;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--free);
+  color:var(--occupied);
+  font-family:var(--body);
+  font-size:clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  line-height:1.6;
+}
+
+a{ color:inherit; text-decoration:none; }
+a:focus-visible, button:focus-visible{
+  outline:2px solid var(--frontier);
+  outline-offset:3px;
+}
+
+.wrap{ max-width:56rem; margin:0 auto; padding:0 var(--gutter); }
+
+/* ---- Signature: the frontier rule.
+   A boundary drawn as discrete cells, the way a frontier node marks
+   the edge between mapped and unmapped space. ---- */
+.frontier-rule{
+  height:3px;
+  border:0;
+  margin:0;
+  background:repeating-linear-gradient(
+    to right,
+    var(--frontier) 0 9px,
+    transparent 9px 15px
+  );
+}
+
+/* ---- Hero ---- */
+.hero{
+  position:relative;
+  padding:clamp(4rem, 12vh, 8rem) 0 clamp(2.5rem, 6vh, 4rem);
+  overflow:hidden;
+}
+.hero::before{ /* faint occupancy grid */
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    repeating-linear-gradient(to right, var(--unknown) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(to bottom, var(--unknown) 0 1px, transparent 1px 14px);
+  opacity:.13;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom, #000, transparent 78%);
+          mask-image:linear-gradient(to bottom, #000, transparent 78%);
+}
+.hero > *{ position:relative; }
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--unknown);
+  margin:0 0 1.4rem;
+}
+.name{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(2.9rem, 11vw, 6.5rem);
+  line-height:.92;
+  letter-spacing:-.035em;
+  margin:0;
+}
+.name .dot{ color:var(--frontier); }
+
+.lede{
+  max-width:var(--measure);
+  margin:1.6rem 0 0;
+  font-size:clamp(1.05rem, 1rem + 0.4vw, 1.3rem);
+  line-height:1.5;
+}
+
+.contact{
+  display:flex; flex-wrap:wrap; gap:.45rem 1.4rem;
+  margin:2.2rem 0 0; padding:0; list-style:none;
+  font-family:var(--mono); font-size:.85rem;
+}
+.contact a{ border-bottom:1px solid var(--unknown); padding-bottom:1px; }
+.contact a:hover{ border-color:var(--frontier); color:var(--frontier); }
+
+/* ---- Sections ---- */
+.section{ padding:clamp(3rem, 8vh, 5rem) 0; }
+.section-label{
+  font-family:var(--mono);
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--unknown);
+  margin:0 0 2rem;
+}
+
+/* ---- Project entries ---- */
+.entry{
+  border-left:2px solid transparent;
+  padding-left:clamp(.85rem, 2vw, 1.4rem);
+  margin-bottom:2.75rem;
+  transition:border-color .18s ease;
+}
+.entry:last-child{ margin-bottom:0; }
+.entry:hover, .entry:focus-within{ border-left-color:var(--frontier); }
+
+.entry-head{
+  display:flex; flex-wrap:wrap; align-items:baseline;
+  gap:.5rem .9rem; margin-bottom:.5rem;
+}
+.entry-title{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:clamp(1.2rem, 1.05rem + .55vw, 1.5rem);
+  letter-spacing:-.015em;
+  line-height:1.2;
+  margin:0;
+}
+.status{
+  font-family:var(--mono);
+  font-size:.68rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--unknown);
+  white-space:nowrap;
+}
+.status.live::before{
+  content:"";
+  display:inline-block;
+  width:6px; height:6px;
+  margin-right:.45rem;
+  background:var(--frontier);
+  vertical-align:.06em;
+}
+.entry p{ margin:0 0 .7rem; max-width:var(--measure); }
+.stack{
+  font-family:var(--mono);
+  font-size:.78rem;
+  color:var(--unknown);
+  margin:0;
+}
+.entry-links{
+  margin:.6rem 0 0;
+  font-family:var(--mono);
+  font-size:.8rem;
+}
+.entry-links a{
+  color:var(--frontier);
+  border-bottom:1px solid transparent;
+}
+.entry-links a:hover{ border-bottom-color:var(--frontier); }
+
+/* ---- Education ---- */
+.facts{ margin:0; max-width:var(--measure); }
+.facts div{
+  display:flex; flex-wrap:wrap; gap:.3rem .9rem;
+  padding:.65rem 0;
+  border-bottom:1px solid rgba(142,142,135,.3);
+}
+.facts dt{
+  font-family:var(--mono);
+  font-size:.75rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--unknown);
+  flex:0 0 9.5rem;
+}
+.facts dd{ margin:0; flex:1 1 14rem; }
+
+/* ---- Interests ---- */
+.interests{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
+  gap:1.75rem 2.5rem;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+.interests li{ max-width:34ch; }
+.interests h3{
+  font-family:var(--mono);
+  font-size:.75rem;
+  font-weight:500;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--frontier);
+  margin:0 0 .35rem;
+}
+.interests p{ margin:0; font-size:.97rem; line-height:1.55; }
+
+/* ---- Footer ---- */
+.foot{
+  padding:2.5rem 0 3.5rem;
+  font-family:var(--mono);
+  font-size:.75rem;
+  color:var(--unknown);
+}
+
+/* ---- Motion ---- */
+@keyframes rise{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+.hero .eyebrow{ animation:rise .5s ease both; }
+.hero .name{ animation:rise .5s .06s ease both; }
+.hero .lede{ animation:rise .5s .12s ease both; }
+.hero .contact{ animation:rise .5s .18s ease both; }
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation:none !important; transition:none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Robotics &middot; Urbana&ndash;Champaign</p>
+    <h1 class="name">Anvesh<br>Reddy<span class="dot">.</span></h1>
+    <p class="lede">
+      Engineering mechanics student at UIUC building autonomous navigation and
+      manipulation systems &mdash; mapping unknown space, picking things up, and
+      designing the mechanisms that do it.
+    </p>
+    <ul class="contact">
+      <li><a href="mailto:YOUR@EMAIL.HERE">email</a></li>
+      <li><a href="https://github.com/YOUR-USERNAME">github</a></li>
+      <li><a href="https://linkedin.com/in/YOUR-HANDLE">linkedin</a></li>
+      <li><a href="/resume.pdf">resume &darr;</a></li>
+    </ul>
+  </div>
+</header>
+
+<hr class="frontier-rule">
+
+<main>
+  <section class="section wrap" aria-labelledby="work">
+    <p class="section-label" id="work">Selected work</p>
+
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Autonomous frontier exploration</h2>
+        <span class="status live">Working</span>
+      </div>
+      <p>
+        A mobile robot that maps an unknown environment on its own. It runs SLAM
+        while a custom frontier-search node finds the boundary between mapped and
+        unmapped space, ranks candidate frontiers, and hands goals to the navigation
+        stack until there is nothing left to explore.
+      </p>
+      <p>
+        The frontier node is written from scratch rather than using explore_lite,
+        which meant owning the detection, clustering, and goal-selection logic
+        end to end.
+      </p>
+      <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
+      <p class="entry-links"><a href="https://github.com/YOUR-USERNAME/REPO">Source &rarr;</a></p>
+    </article>
+
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Vision-guided grasping on a UR3</h2>
+        <span class="status">In progress</span>
+      </div>
+      <p>
+        Perception-to-grasp pipeline in simulation: YOLOv8 detects objects in the
+        camera frame, detections are projected into the robot's workspace, and the
+        arm plans and executes a pick. Builds on hands-on work with UR3 forward and
+        inverse kinematics.
+      </p>
+      <p class="stack">YOLOv8 &middot; ROS 2 &middot; Gazebo &middot; UR3 &middot; OpenCV</p>
+      <p class="entry-links"><a href="https://github.com/YOUR-USERNAME/REPO">Source &rarr;</a></p>
+    </article>
+
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Compliant gripper</h2>
+        <span class="status">In progress</span>
+      </div>
+      <p>
+        Designing and building a gripper mechanism, then running finite element
+        analysis on the grasp forces to make the fingers compliant &mdash; letting
+        the structure absorb positioning error instead of demanding perfect
+        alignment from the controller.
+      </p>
+      <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; tolerance fitting</p>
+    </article>
+
+    <article class="entry">
+      <div class="entry-head">
+        <h2 class="entry-title">Conglobation mechanics in pill bugs</h2>
+        <span class="status">Research</span>
+      </div>
+      <p>
+        Bio-inspired research into how pill bugs roll into a sealed sphere. Working
+        from micro-CT scans to reconstruct the segment geometry, modeling the
+        articulation, and running FEA to understand how the shell distributes load
+        when closed &mdash; with an eye toward armored mechanisms that fold.
+      </p>
+      <p class="stack">Micro-CT &middot; Fusion 360 &middot; MATLAB &middot; FEA</p>
+    </article>
+  </section>
+
+  <hr class="frontier-rule">
+
+  <section class="section wrap" aria-labelledby="bg">
+    <p class="section-label" id="bg">Background</p>
+    <dl class="facts">
+      <div>
+        <dt>University</dt>
+        <dd>University of Illinois Urbana&ndash;Champaign</dd>
+      </div>
+      <div>
+        <dt>Degree</dt>
+        <dd>B.S. Engineering Mechanics, robotics concentration &middot; CS minor</dd>
+      </div>
+      <div>
+        <dt>Graduating</dt>
+        <dd>December 2027 &middot; GPA 3.73</dd>
+      </div>
+      <div>
+        <dt>Tools</dt>
+        <dd>ROS 2, Gazebo, Python, C++, MATLAB, Fusion 360, FEA, Linux</dd>
+      </div>
+      <div>
+        <dt>Looking for</dt>
+        <dd>Robotics internship, Summer 2027</dd>
+      </div>
+    </dl>
+  </section>
+
+  <hr class="frontier-rule">
+
+  <section class="section wrap" aria-labelledby="off">
+    <p class="section-label" id="off">Off the clock</p>
+    <ul class="interests">
+      <li>
+        <h3>Tennis</h3>
+        <p>On court regularly &mdash; the one hobby that has survived every semester.</p>
+      </li>
+      <li>
+        <h3>Lifting</h3>
+        <p>Progressive overload, tracked. Slow, boring, and it works.</p>
+      </li>
+      <li>
+        <h3>Markets</h3>
+        <p>Follow financial markets closely, mostly for the same reason I like control systems: feedback loops and how badly people model risk.</p>
+      </li>
+      <li>
+        <h3>Startups</h3>
+        <p>Read a lot about venture and early-stage companies &mdash; specifically how research gets out of a lab and into something people actually use.</p>
+      </li>
+      <li>
+        <h3>Film</h3>
+        <p>Watch more of it than I should. Drawn to films that are doing something structurally strange.</p>
+      </li>
+    </ul>
+  </section>
+</main>
+
+<hr class="frontier-rule">
+
+<footer class="foot wrap">
+  <p>anv.red &middot; Anvesh Reddy</p>
+</footer>
+
+</body>
+</html>
