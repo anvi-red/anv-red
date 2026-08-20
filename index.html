@@ -20,6 +20,7 @@
   --unknown:   #8E8E87;
   --occupied:  #14151A;
   --frontier:  #CE2A16;
+  --glint:     #D9A017;
 
   --display: "Archivo", system-ui, sans-serif;
   --body:    "IBM Plex Sans", system-ui, sans-serif;
@@ -68,18 +69,132 @@ a:focus-visible, button:focus-visible{
   padding:clamp(4rem, 12vh, 8rem) 0 clamp(2.5rem, 6vh, 4rem);
   overflow:hidden;
 }
-.hero::before{ /* faint occupancy grid */
-  content:"";
-  position:absolute; inset:0;
-  background-image:
-    repeating-linear-gradient(to right, var(--unknown) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(to bottom, var(--unknown) 0 1px, transparent 1px 14px);
-  opacity:.13;
+.hero::before{ content:none; }
+
+/* ---- Hero background: frontier rings sweeping an occupancy grid ---- */
+.hero-map{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
   pointer-events:none;
-  -webkit-mask-image:linear-gradient(to bottom, #000, transparent 78%);
-          mask-image:linear-gradient(to bottom, #000, transparent 78%);
+  -webkit-mask-image:linear-gradient(to bottom, #000 35%, transparent 88%);
+          mask-image:linear-gradient(to bottom, #000 35%, transparent 88%);
 }
-.hero > *{ position:relative; }
+.hero-map .grid{ color:var(--unknown); opacity:.17; }
+
+/* ---- Gantry: clears the pile onto a stack, then the floor carries it back ---- */
+.rig-svg{
+  width:100%;
+  height:auto;
+  align-self:center;
+  pointer-events:none;
+}
+.rig-svg line, .rig-svg rect{ vector-effect:non-scaling-stroke; }
+.rail{ stroke:var(--occupied); stroke-width:2; opacity:.4; }
+.ground{
+  stroke:var(--occupied); stroke-width:2; opacity:.4;
+  stroke-dasharray:10 8;
+  animation:conveyor 15s cubic-bezier(.5,0,.4,1) infinite;
+}
+.carriage{ fill:var(--free); stroke:var(--occupied); stroke-width:2; opacity:.55; }
+.mast{ fill:var(--occupied); opacity:.4; }
+.block{ fill:var(--free-hi); stroke:var(--occupied); stroke-width:2; opacity:.6; }
+.grip{ fill:var(--frontier); opacity:.9; }
+
+.head    { animation:headX 15s cubic-bezier(.45,0,.35,1) infinite; }
+.tool    { animation:toolY 15s cubic-bezier(.45,0,.35,1) infinite; }
+.finger-l{ animation:gripL 15s cubic-bezier(.45,0,.35,1) infinite; }
+.finger-r{ animation:gripR 15s cubic-bezier(.45,0,.35,1) infinite; }
+.block-a { animation:blockA 15s cubic-bezier(.45,0,.35,1) infinite; }
+.block-b { animation:blockB 15s cubic-bezier(.45,0,.35,1) infinite; }
+.block-c { animation:blockC 15s cubic-bezier(.45,0,.35,1) infinite; }
+
+@keyframes headX{
+  0%,10%        { transform:translateX(110px); }
+  16.67%,22.67% { transform:translateX(330px); }
+  26.67%,36.67% { transform:translateX(110px); }
+  43.33%,49.33% { transform:translateX(330px); }
+  53.33%,63.33% { transform:translateX(110px); }
+  70%,76%       { transform:translateX(330px); }
+  80%,100%      { transform:translateX(110px); }
+}
+
+@keyframes toolY{
+  0%            { transform:translateY(52px); }
+  4%,6%         { transform:translateY(107px); }
+  10%,16.67%    { transform:translateY(52px); }
+  20.67%,22.67% { transform:translateY(167px); }
+  26.67%        { transform:translateY(52px); }
+  30.67%,32.67% { transform:translateY(137px); }
+  36.67%,43.33% { transform:translateY(52px); }
+  47.33%,49.33% { transform:translateY(137px); }
+  53.33%        { transform:translateY(52px); }
+  57.33%,59.33% { transform:translateY(167px); }
+  63.33%,70%    { transform:translateY(52px); }
+  74%,76%       { transform:translateY(107px); }
+  80%,100%      { transform:translateY(52px); }
+}
+
+@keyframes gripL{
+  0%,4%         { transform:translateX(0); }
+  6%,20.67%     { transform:translateX(4px); }
+  22.67%,30.67% { transform:translateX(0); }
+  32.67%,47.33% { transform:translateX(4px); }
+  49.33%,57.33% { transform:translateX(0); }
+  59.33%,74%    { transform:translateX(4px); }
+  76%,100%      { transform:translateX(0); }
+}
+@keyframes gripR{
+  0%,4%         { transform:translateX(0); }
+  6%,20.67%     { transform:translateX(-4px); }
+  22.67%,30.67% { transform:translateX(0); }
+  32.67%,47.33% { transform:translateX(-4px); }
+  49.33%,57.33% { transform:translateX(0); }
+  59.33%,74%    { transform:translateX(-4px); }
+  76%,100%      { transform:translateX(0); }
+}
+
+@keyframes blockA{
+  0%,6%      { transform:translate(0,0); }
+  10%        { transform:translate(0,-55px); }
+  16.67%     { transform:translate(220px,-55px); }
+  20.67%,80% { transform:translate(220px,60px); }
+  100%       { transform:translate(0,60px); }
+}
+@keyframes blockB{
+  0%,32.67%  { transform:translate(0,0); }
+  36.67%     { transform:translate(0,-85px); }
+  43.33%     { transform:translate(220px,-85px); }
+  47.33%,80% { transform:translate(220px,0); }
+  100%       { transform:translate(0,0); }
+}
+@keyframes blockC{
+  0%,59.33%  { transform:translate(0,0); }
+  63.33%     { transform:translate(0,-115px); }
+  70%        { transform:translate(220px,-115px); }
+  74%,80%    { transform:translate(220px,-60px); }
+  100%       { transform:translate(0,-60px); }
+}
+
+@keyframes conveyor{
+  0%,80% { stroke-dashoffset:0; }
+  100%   { stroke-dashoffset:220; }
+}
+
+@media (max-width: 900px){
+  .hero .wrap{ grid-template-columns:1fr; }
+  .rig-svg{ display:none; }
+}
+.hero .wrap{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 22rem;
+  align-items:center;
+  gap:clamp(1.5rem, 4vw, 3rem);
+  max-width:64rem;
+}
 
 .eyebrow{
   font-family:var(--mono);
@@ -98,6 +213,7 @@ a:focus-visible, button:focus-visible{
   margin:0;
 }
 .name .dot{ color:var(--frontier); }
+.name .hl{ color:var(--frontier); }
 
 .lede{
   max-width:var(--measure);
@@ -227,10 +343,64 @@ a:focus-visible, button:focus-visible{
   color:var(--unknown);
 }
 
+/* ---- Sparks drifting across the page ---- */
+.sky{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:-1;
+}
+.shot{
+  position:absolute;
+  height:1.5px;
+  border-radius:2px;
+  background:linear-gradient(90deg, rgba(206,42,22,0), var(--frontier));
+  opacity:0;
+  animation:shoot 12s linear infinite;
+}
+.shot::after{
+  content:"";
+  position:absolute;
+  right:-1px;
+  top:50%;
+  width:4px;
+  height:4px;
+  margin-top:-2px;
+  border-radius:50%;
+  background:var(--frontier);
+  box-shadow:0 0 7px rgba(206,42,22,.75);
+}
+@keyframes shoot{
+  0%       { opacity:0; transform:rotate(29deg) translateX(0); }
+  4%       { opacity:.6; }
+  46%      { opacity:.6; }
+  58%      { opacity:0; transform:rotate(29deg) translateX(135vmax); }
+  100%     { opacity:0; transform:rotate(29deg) translateX(135vmax); }
+}
+
 /* ---- Motion ---- */
 @keyframes rise{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
 .hero .eyebrow{ animation:rise .5s ease both; }
-.hero .name{ animation:rise .5s .06s ease both; }
+.name{ position:relative; display:inline-block; }
+
+/* ---- Occasional glints across the name ---- */
+.spark{
+  position:absolute;
+  width:.15em;
+  height:.15em;
+  fill:var(--glint);
+  opacity:0;
+  pointer-events:none;
+  overflow:visible;
+  filter:drop-shadow(0 0 .08em rgba(217,160,23,.75));
+  animation:glint 7s ease-in-out infinite;
+}
+@keyframes glint{
+  0%,100% { opacity:0; transform:scale(.15) rotate(-30deg); }
+  5%      { opacity:1; transform:scale(1) rotate(0deg); }
+  15%     { opacity:0; transform:scale(.4) rotate(25deg); }
+}
 .hero .lede{ animation:rise .5s .12s ease both; }
 .hero .contact{ animation:rise .5s .18s ease both; }
 
@@ -241,10 +411,28 @@ a:focus-visible, button:focus-visible{
 </head>
 <body>
 
+<div class="sky" aria-hidden="true">
+  <span class="shot" style="top:-6%;  left:-14%; width:16vmin; animation-duration:11s; animation-delay:0s"></span>
+  <span class="shot" style="top:12%;  left:-22%; width:11vmin; animation-duration:14s; animation-delay:3.5s"></span>
+  <span class="shot" style="top:-12%; left:22%;  width:19vmin; animation-duration:9s;  animation-delay:6.5s"></span>
+  <span class="shot" style="top:34%;  left:-26%; width:13vmin; animation-duration:16s; animation-delay:10s"></span>
+  <span class="shot" style="top:-9%;  left:58%;  width:15vmin; animation-duration:13s; animation-delay:15s"></span>
+</div>
+
 <header class="hero">
+  <svg class="hero-map" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="occupancy" width="14" height="14" patternUnits="userSpaceOnUse">
+        <path d="M14 0H0V14" fill="none" stroke="currentColor" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect class="grid" width="1200" height="600" fill="url(#occupancy)"/>
+  </svg>
+
   <div class="wrap">
+    <div class="hero-copy">
     <p class="eyebrow">Robotics &middot; Urbana&ndash;Champaign</p>
-    <h1 class="name">Anvesh<br>Reddy<span class="dot">.</span></h1>
+    <h1 class="name"><span class="hl">Anv</span>esh<br><span class="hl">Red</span>dy<span class="dot">.</span><svg class="spark" style="left:5%;  top:.06em;  animation-delay:0s"    viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:43%; top:.34em;  animation-delay:1.6s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:80%; top:.04em;  animation-delay:3.2s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:18%; top:1.06em; animation-delay:4.5s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:64%; top:1.3em;  animation-delay:5.8s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg></h1>
     <p class="lede">
       Engineering mechanics student at UIUC building autonomous navigation and
       manipulation systems &mdash; mapping unknown space, picking things up, and
@@ -252,10 +440,38 @@ a:focus-visible, button:focus-visible{
     </p>
     <ul class="contact">
       <li><a href="mailto:YOUR@EMAIL.HERE">email</a></li>
-      <li><a href="https://github.com/YOUR-USERNAME">github</a></li>
+      <li><a href="https://github.com/anvi-red">github</a></li>
       <li><a href="https://linkedin.com/in/YOUR-HANDLE">linkedin</a></li>
       <li><a href="/resume.pdf">resume &darr;</a></li>
     </ul>
+    </div>
+
+    <svg class="rig-svg" viewBox="0 0 460 240" aria-hidden="true" focusable="false">
+      <defs>
+        <clipPath id="railclip">
+          <rect x="0" y="10" width="460" height="230"/>
+        </clipPath>
+      </defs>
+
+      <line class="rail" x1="20" y1="18" x2="440" y2="18"/>
+      <line class="ground" x1="10" y1="201" x2="450" y2="201"/>
+
+      <rect class="block block-a" x="95" y="110" width="30" height="30"/>
+      <rect class="block block-b" x="95" y="140" width="30" height="30"/>
+      <rect class="block block-c" x="95" y="170" width="30" height="30"/>
+
+      <g clip-path="url(#railclip)">
+        <g class="head">
+          <g class="tool">
+            <rect class="mast" x="-2.5" y="-200" width="5" height="200"/>
+            <rect class="grip palm" x="-25" y="-4" width="50" height="6"/>
+            <rect class="grip finger-l" x="-25" y="2" width="6" height="24"/>
+            <rect class="grip finger-r" x="19" y="2" width="6" height="24"/>
+          </g>
+          <rect class="carriage" x="-20" y="10" width="40" height="16"/>
+        </g>
+      </g>
+    </svg>
   </div>
 </header>
 
@@ -282,22 +498,28 @@ a:focus-visible, button:focus-visible{
         end to end.
       </p>
       <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
-      <p class="entry-links"><a href="https://github.com/YOUR-USERNAME/REPO">Source &rarr;</a></p>
+      <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
     </article>
 
     <article class="entry">
       <div class="entry-head">
-        <h2 class="entry-title">Vision-guided grasping on a UR3</h2>
-        <span class="status">In progress</span>
+        <h2 class="entry-title">Robot drawing system on a UR3</h2>
+        <span class="status live">Working</span>
       </div>
       <p>
-        Perception-to-grasp pipeline in simulation: YOLOv8 detects objects in the
-        camera frame, detections are projected into the robot's workspace, and the
-        arm plans and executes a pick. Builds on hands-on work with UR3 forward and
-        inverse kinematics.
+        A UR3 arm that reproduces an image by drawing it. An image-processing
+        pipeline runs edge detection to reduce a photograph to a set of contours,
+        the contours are converted to waypoints in the arm's workspace, and inverse
+        kinematics turns those into joint trajectories the arm executes with a pen.
       </p>
-      <p class="stack">YOLOv8 &middot; ROS 2 &middot; Gazebo &middot; UR3 &middot; OpenCV</p>
-      <p class="entry-links"><a href="https://github.com/YOUR-USERNAME/REPO">Source &rarr;</a></p>
+      <p>
+        The interesting part is everything between the two ends: deciding which
+        edges are worth drawing, ordering strokes so the arm isn't crossing its own
+        work, and keeping the pen loaded against a surface that is never quite
+        where the model says it is.
+      </p>
+      <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
+      <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
     </article>
 
     <article class="entry">
@@ -314,19 +536,6 @@ a:focus-visible, button:focus-visible{
       <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; tolerance fitting</p>
     </article>
 
-    <article class="entry">
-      <div class="entry-head">
-        <h2 class="entry-title">Conglobation mechanics in pill bugs</h2>
-        <span class="status">Research</span>
-      </div>
-      <p>
-        Bio-inspired research into how pill bugs roll into a sealed sphere. Working
-        from micro-CT scans to reconstruct the segment geometry, modeling the
-        articulation, and running FEA to understand how the shell distributes load
-        when closed &mdash; with an eye toward armored mechanisms that fold.
-      </p>
-      <p class="stack">Micro-CT &middot; Fusion 360 &middot; MATLAB &middot; FEA</p>
-    </article>
   </section>
 
   <hr class="frontier-rule">
