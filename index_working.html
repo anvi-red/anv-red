@@ -496,7 +496,9 @@ a:focus-visible, button:focus-visible{
   padding: 0;
   overflow: hidden;
   position: relative;
-  align-self: flex-start;
+  align-self: stretch;      /* grow to match text column height */
+  aspect-ratio: unset;      /* override the 4/3 from .entry-media */
+  min-height: 14rem;        /* floor so it doesn't collapse on short text */
 }
 .carousel-track{
   display: flex;
@@ -510,6 +512,7 @@ a:focus-visible, button:focus-visible{
 .carousel-track::-webkit-scrollbar{ display: none; }
 .carousel-slide{
   flex: 0 0 100%;
+  height: 100%;
   scroll-snap-align: start;
   display: flex;
   align-items: center;
