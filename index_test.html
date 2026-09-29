@@ -240,11 +240,18 @@ a:focus-visible, button:focus-visible{
   margin:0 0 2rem;
 }
 
+.work-subhead{
+  font-family:var(--mono);
+  font-size:.72rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--frontier);
+  margin:0 0 1.4rem;
+}
+.work-subhead:not(:first-of-type){ margin-top:3rem; }
+
 /* ---- Project entries ---- */
 .entry{
-  display:flex;
-  align-items:flex-start;
-  gap:clamp(1.25rem, 3.5vw, 2.75rem);
   border-left:2px solid transparent;
   padding-left:clamp(.85rem, 2vw, 1.4rem);
   margin-bottom:2.75rem;
@@ -253,6 +260,11 @@ a:focus-visible, button:focus-visible{
 .entry:last-child{ margin-bottom:0; }
 .entry:hover, .entry:focus-within{ border-left-color:var(--frontier); }
 
+.entry-main{
+  display:flex;
+  align-items:flex-start;
+  gap:clamp(1.25rem, 3.5vw, 2.75rem);
+}
 .entry-content{ flex:1 1 auto; min-width:0; }
 
 /* ---- Media panel: gif/screenshot placeholder ---- */
@@ -286,9 +298,15 @@ a:focus-visible, button:focus-visible{
   object-fit:cover;
   display:block;
 }
+.entry-media--stack{
+  width:clamp(9rem, 26vw, 12rem);
+  flex:none;
+  aspect-ratio:4 / 3;
+  margin:1rem auto 0;
+}
 
 @media (max-width:700px){
-  .entry{ flex-direction:column; }
+  .entry-main{ flex-direction:column; }
   .entry-media{ width:100%; flex-basis:auto; aspect-ratio:16 / 9; }
 }
 
@@ -321,11 +339,31 @@ a:focus-visible, button:focus-visible{
   vertical-align:.06em;
 }
 .entry p{ margin:0 0 .7rem; max-width:var(--measure); }
+.entry-main + .stack{ margin-top:.75rem; }
 .stack{
   font-family:var(--mono);
   font-size:.78rem;
   color:var(--unknown);
   margin:0;
+}
+
+/* ---- Currently: quick, nonchalant status lines ---- */
+.currently{
+  list-style:none;
+  margin:0;
+  padding:0;
+  max-width:var(--measure);
+  display:flex;
+  flex-direction:column;
+  gap:.55rem;
+}
+.currently li{
+  font-family:var(--mono);
+  font-size:.85rem;
+  color:var(--unknown);
+}
+.currently .org{
+  color:var(--frontier);
 }
 .entry-links{
   margin:.6rem 0 0;
@@ -382,42 +420,6 @@ a:focus-visible, button:focus-visible{
   font-family:var(--mono);
   font-size:.75rem;
   color:var(--unknown);
-}
-
-/* ---- Meteors drifting behind the name, top quadrant only ---- */
-.sky{
-  position:absolute;
-  inset:0;
-  overflow:hidden;
-  pointer-events:none;
-  z-index:0;
-}
-.shot{
-  position:absolute;
-  height:1.5px;
-  border-radius:2px;
-  background:linear-gradient(90deg, rgba(206,42,22,0), var(--frontier));
-  opacity:0;
-  animation:shoot 12s linear infinite;
-}
-.shot::after{
-  content:"";
-  position:absolute;
-  right:-1px;
-  top:50%;
-  width:4px;
-  height:4px;
-  margin-top:-2px;
-  border-radius:50%;
-  background:var(--frontier);
-  box-shadow:0 0 7px rgba(206,42,22,.75);
-}
-@keyframes shoot{
-  0%       { opacity:0; transform:rotate(29deg) translateX(0); }
-  4%       { opacity:.6; }
-  46%      { opacity:.6; }
-  58%      { opacity:0; transform:rotate(29deg) translateX(135vmax); }
-  100%     { opacity:0; transform:rotate(29deg) translateX(135vmax); }
 }
 
 /* ---- Motion ---- */
@@ -496,9 +498,9 @@ a:focus-visible, button:focus-visible{
   padding: 0;
   overflow: hidden;
   position: relative;
-  align-self: stretch;      /* grow to match text column height */
+  align-self: flex-start;
   aspect-ratio: unset;      /* override the 4/3 from .entry-media */
-  min-height: 14rem;        /* floor so it doesn't collapse on short text */
+  min-height: 8rem;
 }
 .carousel-track{
   display: flex;
@@ -634,14 +636,6 @@ a:focus-visible, button:focus-visible{
 </div>
 
 <header class="hero">
-  <div class="sky" aria-hidden="true">
-    <span class="shot" style="top:-6%;  left:-14%; width:16vmin; animation-duration:11s; animation-delay:0s"></span>
-    <span class="shot" style="top:12%;  left:-22%; width:11vmin; animation-duration:14s; animation-delay:3.5s"></span>
-    <span class="shot" style="top:-12%; left:22%;  width:19vmin; animation-duration:9s;  animation-delay:6.5s"></span>
-    <span class="shot" style="top:34%;  left:-26%; width:13vmin; animation-duration:16s; animation-delay:10s"></span>
-    <span class="shot" style="top:-9%;  left:58%;  width:15vmin; animation-duration:13s; animation-delay:15s"></span>
-  </div>
-
   <svg class="hero-map" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
       <pattern id="occupancy" width="14" height="14" patternUnits="userSpaceOnUse">
@@ -700,88 +694,119 @@ a:focus-visible, button:focus-visible{
 <hr class="frontier-rule">
 
 <main>
-  <section class="section wrap" aria-labelledby="work">
-    <p class="section-label reveal-item" id="work">Selected work</p>
+  <section class="section wrap" aria-labelledby="currently">
+    <p class="section-label reveal-item" id="currently">Currently at</p>
 
     <article class="entry reveal-item d1">
-      <div class="entry-content">
-        <div class="entry-head">
-          <h2 class="entry-title">Autonomous frontier exploration</h2>
-          <span class="status live">Working</span>
-        </div>
-        <p>
-          A mobile robot that maps an unknown environment on its own. It runs SLAM
-          while a custom frontier-search node finds the boundary between mapped and
-          unmapped space, ranks candidate frontiers, and hands goals to the navigation
-          stack until there is nothing left to explore.
-        </p>
-        <p>
-          The frontier node is written from scratch rather than using explore_lite,
-          which meant owning the detection, clustering, and goal-selection logic
-          end to end.
-        </p>
-        <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
-        <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
+      <div class="entry-head">
+        <h2 class="entry-title">Derek Hoiem Computer Vision Lab</h2>
+        <span class="status live">In progress</span>
       </div>
-      <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      <div class="entry-content">
+        <p>Researching VLAs for self-supervised reinforcement learning.</p>
+      </div>
+      <div class="entry-media entry-media--stack">
+        <video autoplay loop muted playsinline>
+          <source src="media/vla-research.mp4" type="video/mp4">
+        </video>
+      </div>
     </article>
 
     <article class="entry reveal-item d2">
+      <div class="entry-head">
+        <h2 class="entry-title">SigRobotics</h2>
+        <span class="status live">In progress</span>
+      </div>
       <div class="entry-content">
-        <div class="entry-head">
-          <h2 class="entry-title">Robot drawing system on a UR3</h2>
-          <span class="status live">Working</span>
-        </div>
-        <p>
-          A UR3 arm that reproduces an image by drawing it. An image-processing
-          pipeline runs edge detection to reduce a photograph to a set of contours,
-          the contours are converted to waypoints in the arm's workspace, and inverse
-          kinematics turns those into joint trajectories the arm executes with a pen.
-        </p>
-        <p>
-          The interesting part is everything between the two ends: deciding which
-          edges are worth drawing, ordering strokes so the arm isn't crossing its own
-          work, and keeping the pen loaded against a surface that is never quite
-          where the model says it is.
-        </p>
-        <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
-        <p class="entry-links"><a href="https://github.com/anvi-red/REPO-NAME">Source &rarr;</a></p>
+        <p>Designing a mechanical hand for the K1 Booster humanoid.</p>
       </div>
-      <div class="entry-media carousel-media">
-        <div class="carousel-track">
-          <div class="carousel-slide">
-            <video autoplay loop muted playsinline>
-              <source src="media/robotdrawing1-ezgif.com-video-subtitles.mp4" type="video/mp4">
-            </video>
-          </div>
-          <div class="carousel-slide">
-            <img src="media/ezgif.com-gif-maker.gif" alt="Robot arm drawing result">
-          </div>
-        </div>
-        <button class="carousel-btn carousel-prev" aria-label="Previous">&#8592;</button>
-        <button class="carousel-btn carousel-next" aria-label="Next">&#8594;</button>
-        <div class="carousel-dots">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-        </div>
+      <div class="entry-media entry-media--stack">
+        <img src="media/sigrobotics-hand.png" alt="K1 Booster humanoid hand CAD render">
       </div>
+    </article>
+  </section>
+
+  <hr class="frontier-rule">
+
+  <section class="section wrap" aria-labelledby="work">
+    <p class="section-label reveal-item" id="work">Projects</p>
+
+    <h3 class="work-subhead reveal-item d1">Mechanical Design</h3>
+
+    <article class="entry reveal-item d1">
+      <div class="entry-head">
+        <h2 class="entry-title">Mechanical Gripper</h2>
+      </div>
+      <div class="entry-main">
+        <div class="entry-content">
+          <p>
+            A 3D-printed, nine-part parallel-jaw gripper producing 17.7&nbsp;N of grip
+            force from a 6V servo through a three-gear, 1.5:1 reduction. A six-point
+            parametric FEA study on jaw thickness and geometry cut mass by 47.5% while
+            holding a 4.86&times; factor of safety, backed by a regression model
+            predicting stress and displacement under load.
+          </p>
+        </div>
+        <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      </div>
+      <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; GD&amp;T &middot; ASME Y14.5</p>
+    </article>
+
+    <h3 class="work-subhead reveal-item d2">Robotics &amp; Autonomy</h3>
+
+    <article class="entry reveal-item d2">
+      <div class="entry-head">
+        <h2 class="entry-title">Autonomous Robot Exploration</h2>
+      </div>
+      <div class="entry-main">
+        <div class="entry-content">
+          <p>
+            An autonomous exploration pipeline for a TurtleBot3 in ROS&nbsp;2/Gazebo,
+            pairing slam_toolbox for real-time SLAM with Nav2 and a custom
+            BFS-based frontier detector. 100% completion across 10 randomized-start
+            trials, averaging 2.9 minutes per run with progress-based frontier
+            blacklisting to prevent navigation loops.
+          </p>
+        </div>
+        <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      </div>
+      <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
     </article>
 
     <article class="entry reveal-item d3">
-      <div class="entry-content">
-        <div class="entry-head">
-          <h2 class="entry-title">Compliant gripper</h2>
-          <span class="status">In progress</span>
-        </div>
-        <p>
-          Designing and building a gripper mechanism, then running finite element
-          analysis on the grasp forces to make the fingers compliant &mdash; letting
-          the structure absorb positioning error instead of demanding perfect
-          alignment from the controller.
-        </p>
-        <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; tolerance fitting</p>
+      <div class="entry-head">
+        <h2 class="entry-title">UR3 Robotic Arm Drawing Pipeline</h2>
       </div>
-      <div class="entry-media"><span>gif / img<br>placeholder</span></div>
+      <div class="entry-main">
+        <div class="entry-content">
+          <p>
+            A closed-form 6-DOF inverse-kinematics solver for a UR3, converting target
+            end-effector poses into joint commands on physical hardware. A ROS/Python
+            perception-to-actuation pipeline &mdash; blue-channel segmentation, Canny
+            edge detection, contour extraction &mdash; autonomously draws test images,
+            with nearest-neighbor contour sequencing cutting unnecessary travel by 17%.
+          </p>
+        </div>
+        <div class="entry-media carousel-media">
+          <div class="carousel-track">
+            <div class="carousel-slide">
+              <video autoplay loop muted playsinline>
+                <source src="media/robotdrawing1-ezgif.com-video-subtitles.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="carousel-slide">
+              <img src="media/ezgif.com-gif-maker.gif" alt="Robot arm drawing result">
+            </div>
+          </div>
+          <button class="carousel-btn carousel-prev" aria-label="Previous">&#8592;</button>
+          <button class="carousel-btn carousel-next" aria-label="Next">&#8594;</button>
+          <div class="carousel-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+      <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
     </article>
 
   </section>
@@ -954,60 +979,21 @@ a:focus-visible, button:focus-visible{
     if (prev) prev.style.opacity = '0.3';
     syncMedia(0);
   });
-})();
 
-/* Cursor dust trail — mouse only, skipped entirely on touch devices */
-(function(){
-  if (!window.matchMedia('(pointer: fine)').matches) return;
-
-  var canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
-  document.body.appendChild(canvas);
-  var ctx = canvas.getContext('2d');
-
-  var W = 0, H = 0;
-  function resize(){
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+  /* Pin each carousel height to its sibling text column */
+  function syncCarouselHeights(){
+    document.querySelectorAll('.entry-main').forEach(function(main){
+      var content  = main.querySelector('.entry-content');
+      var carousel = main.querySelector('.carousel-media');
+      if (!content || !carousel) return;
+      carousel.style.height = '';
+      if (window.innerWidth > 700){
+        carousel.style.height = content.offsetHeight + 'px';
+      }
+    });
   }
-  resize();
-  window.addEventListener('resize', resize, { passive: true });
-
-  var particles = [];
-  function rand(lo, hi){ return lo + Math.random() * (hi - lo); }
-
-  window.addEventListener('mousemove', function(e){
-    var count = Math.ceil(rand(2, 4));
-    for (var i = 0; i < count; i++){
-      particles.push({
-        x:     e.clientX + rand(-4, 4),
-        y:     e.clientY + rand(-4, 4),
-        vx:    rand(-0.5, 0.5),
-        vy:    rand(-1.0, 0.1),   /* drift slightly upward like embers */
-        r:     rand(1.2, 3.0),
-        life:  1,
-        decay: rand(0.03, 0.07)
-      });
-    }
-  }, { passive: true });
-
-  function draw(){
-    ctx.clearRect(0, 0, W, H);
-    for (var i = particles.length - 1; i >= 0; i--){
-      var p = particles[i];
-      p.life -= p.decay;
-      if (p.life <= 0){ particles.splice(i, 1); continue; }
-      p.x  += p.vx;
-      p.y  += p.vy;
-      p.r  *= 0.96;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(p.r, 0.3), 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(206,42,22,' + (p.life * 0.65).toFixed(2) + ')';
-      ctx.fill();
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
+  window.addEventListener('load',   syncCarouselHeights);
+  window.addEventListener('resize', syncCarouselHeights);
 })();
 </script>
 
