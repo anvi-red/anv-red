@@ -299,10 +299,14 @@ a:focus-visible, button:focus-visible{
   display:block;
 }
 .entry-media--stack{
-  width:clamp(9rem, 26vw, 12rem);
+  width:clamp(14rem, 40vw, 20rem);
   flex:none;
   aspect-ratio:4 / 3;
   margin:1rem auto 0;
+}
+.entry-media--stack img,
+.entry-media--stack video{
+  object-fit:contain;
 }
 
 @media (max-width:700px){
