@@ -299,7 +299,7 @@ a:focus-visible, button:focus-visible{
   display:block;
 }
 .entry-media--stack{
-  width:clamp(10rem, 22vw, 14rem);
+  width:clamp(8rem, 16vw, 11rem);
   flex:none;
   aspect-ratio:4 / 3;
   margin:1rem auto 0;
@@ -308,6 +308,19 @@ a:focus-visible, button:focus-visible{
 .entry-media--stack img,
 .entry-media--stack video{
   object-fit:contain;
+}
+
+.currently-row{
+  display:flex;
+  gap:2.5rem;
+  align-items:flex-start;
+}
+.currently-row .entry--currently{
+  flex:1 1 0;
+  min-width:0;
+}
+@media (max-width:700px){
+  .currently-row{ flex-direction:column; }
 }
 
 @media (max-width:700px){
@@ -700,33 +713,35 @@ a:focus-visible, button:focus-visible{
   <section class="section wrap" aria-labelledby="currently">
     <p class="section-label reveal-item" id="currently">Currently at</p>
 
-    <article class="entry reveal-item d1">
-      <div class="entry-head">
-        <h2 class="entry-title">Derek Hoiem Computer Vision Lab</h2>
-        <span class="status live">In progress</span>
-      </div>
-      <div class="entry-content">
-        <p>Researching VLAs for self-supervised reinforcement learning.</p>
-      </div>
-      <div class="entry-media entry-media--stack">
-        <video autoplay loop muted playsinline>
-          <source src="media/vla-research.mp4" type="video/mp4">
-        </video>
-      </div>
-    </article>
+    <div class="currently-row">
+      <article class="entry entry--currently reveal-item d1">
+        <div class="entry-head">
+          <h2 class="entry-title">Derek Hoiem Computer Vision Lab</h2>
+          <span class="status live">In progress</span>
+        </div>
+        <div class="entry-content">
+          <p>Researching VLAs for self-supervised reinforcement learning.</p>
+        </div>
+        <div class="entry-media entry-media--stack">
+          <video autoplay loop muted playsinline>
+            <source src="media/vla-research.mp4" type="video/mp4">
+          </video>
+        </div>
+      </article>
 
-    <article class="entry reveal-item d2">
-      <div class="entry-head">
-        <h2 class="entry-title">SigRobotics</h2>
-        <span class="status live">In progress</span>
-      </div>
-      <div class="entry-content">
-        <p>Designing a mechanical hand for the K1 Booster humanoid.</p>
-      </div>
-      <div class="entry-media entry-media--stack">
-        <img src="media/sigrobotics-hand.png" alt="K1 Booster humanoid hand CAD render">
-      </div>
-    </article>
+      <article class="entry entry--currently reveal-item d2">
+        <div class="entry-head">
+          <h2 class="entry-title">SigRobotics</h2>
+          <span class="status live">In progress</span>
+        </div>
+        <div class="entry-content">
+          <p>Designing a mechanical hand for the K1 Booster humanoid.</p>
+        </div>
+        <div class="entry-media entry-media--stack">
+          <img src="media/sigrobotics-hand.png" alt="K1 Booster humanoid hand CAD render">
+        </div>
+      </article>
+    </div>
   </section>
 
   <hr class="frontier-rule">
