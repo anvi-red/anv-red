@@ -1,6 +1,6 @@
 # anv.red
 
-Anvesh Reddy's engineering portfolio. Plain HTML, CSS, and JavaScript, hosted on Cloudflare Pages from this GitHub repository.
+Anvesh Reddy's engineering portfolio. Plain HTML, CSS, and JavaScript, hosted on the existing Cloudflare Worker `anv-red` through Workers Builds and this GitHub repository.
 
 ## Edit and preview
 
@@ -21,11 +21,13 @@ npm run check
 npm run publish -- "Describe the portfolio update"
 ```
 
-Publishing runs the checks, checks for newer remote commits, commits the portfolio files, and pushes `main`. The existing Cloudflare Pages Git integration handles deployment to anv.red. The GitHub workflow also runs these checks on pushes and pull requests. Cloudflare and GitHub checks run independently; the local publish command checks before pushing.
+Publishing runs the checks, checks for newer remote commits, commits the portfolio files, and pushes `main`. The existing Cloudflare Workers Builds Git integration handles deployment to anv.red. The GitHub workflow also checks and packages the site on pushes and pull requests. Cloudflare's deploy command `npx wrangler deploy` reads `wrangler.json`, runs the same checks through `scripts/build.mjs`, and deploys the generated `dist/` folder. Failed checks stop packaging and deployment.
 
-Use a separate branch and pull request when you want a Cloudflare preview before production; availability depends on the project's preview branch settings. Do not add a second deployment system or Cloudflare API token for the normal Git integration.
+Use a separate branch and pull request when you want a preview before production; availability depends on the project's non-production branch settings. Do not add a second deployment system or Cloudflare API token for the normal Git integration.
 
-For an HTML-only Pages project, the deployment folder is the repository root and no build step is required. Preserve the existing Cloudflare project and custom domain settings.
+Preserve the existing Cloudflare Worker and custom domain settings. The dashboard build command can remain empty: Wrangler invokes the checked packaging step. Only the page, media, and résumé are packaged; development files and historical pages stay in GitHub.
+
+If the terminal credential helper is unavailable inside Codex, use the connected GitHub plugin to publish one commit containing the reviewed changes. Fetch and synchronize this checkout afterward; never expose or store credentials in this repository.
 
 ## Browser editing
 

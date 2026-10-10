@@ -13,7 +13,7 @@ if (run('git', ['branch','--show-current'], true) !== 'main') throw new Error('P
 run(process.execPath, ['scripts/check.mjs']);
 run('git',['fetch','origin']);
 if (run('git',['rev-list','--count','HEAD..origin/main'],true) !== '0') throw new Error('GitHub has newer changes. Pull and review them before publishing.');
-run('git',['add','--','index.html','media','resume.pdf','package.json','scripts','.github','README.md','AGENTS.md','.gitignore']);
+run('git',['add','--','index.html','media','resume.pdf','package.json','scripts','.github','README.md','AGENTS.md','.gitignore','wrangler.json']);
 const staged = spawnSync('git',['diff','--cached','--quiet'],{cwd:root});
 if (staged.status === 1) run('git',['commit','-m',message]);
 else if (staged.status !== 0) throw new Error('Could not inspect staged changes.');

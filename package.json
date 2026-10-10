@@ -2,6 +2,7 @@
   "name": "anv-red-portfolio",
   "private": true,
   "scripts": {
+    "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",
     "dev": "node scripts/preview.mjs",
     "publish": "node scripts/publish.mjs"
