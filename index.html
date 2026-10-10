@@ -1,1011 +1,317 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Anvesh Reddy — Robotics</title>
-<meta name="description" content="Anvesh Reddy — robotics engineering student at UIUC. Autonomous navigation, manipulation, and bio-inspired mechanism design.">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-
+<title>Anvesh Reddy</title>
+<meta name="description" content="Anvesh Reddy — engineering mechanics student at UIUC interested in robotics.">
 <style>
-/* ---- Palette derived from a SLAM occupancy grid ----
-   free space = background, occupied = text,
-   unknown = muted, frontier = red (the thing worth walking toward) */
 :root{
-  --free:      #E7E7E2;
-  --free-hi:   #F3F3EF;
-  --unknown:   #8E8E87;
-  --occupied:  #14151A;
-  --frontier:  #CE2A16;
-  --glint:     #D9A017;
-
-  --display: "Archivo", system-ui, sans-serif;
-  --body:    "IBM Plex Sans", system-ui, sans-serif;
-  --mono:    "IBM Plex Mono", ui-monospace, monospace;
-
-  --gutter: clamp(1.5rem, 5vw, 4.5rem);
-  --measure: 62ch;
+  --bg:#fafaf8; --fg:#141414; --muted:#6b6b66; --rule:#e4e3dd; --accent:#c8321f;
 }
-
-*,*::before,*::after{ box-sizing:border-box; }
-html{ -webkit-text-size-adjust:100%; }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{
-  margin:0;
-  background:var(--free);
-  color:var(--occupied);
-  font-family:var(--body);
-  font-size:clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
-  line-height:1.6;
+  margin:0; background:var(--bg); color:var(--fg);
+  font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
-p{ overflow-wrap:break-word; }
+.wrap{max-width:46rem; margin:0 auto; padding:4rem 1.25rem 7rem}
 
-a{ color:inherit; text-decoration:none; }
-a:focus-visible, button:focus-visible{
-  outline:2px solid var(--frontier);
-  outline-offset:3px;
-}
+h1{font-size:2.4rem; line-height:1.1; letter-spacing:-.02em; margin:0 0 .6rem}
+.lede{font-size:1.15rem; color:var(--muted); margin:0 0 1rem}
+.links{display:flex; flex-wrap:wrap; gap:.4rem 1.2rem; margin:0}
+a{color:var(--fg); text-decoration-color:var(--accent); text-underline-offset:3px}
+a:hover{color:var(--accent)}
 
-.wrap{ max-width:56rem; margin:0 auto; padding:0 var(--gutter); }
+section{margin-top:3.5rem}
+h2{
+  font-size:.78rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 1.4rem; padding-bottom:.5rem; border-bottom:1px solid var(--rule);
+}
+h4.group{
+  font-size:.85rem; font-weight:600; color:var(--accent);
+  letter-spacing:.04em; margin:2rem 0 1rem;
+}
+h4.group:first-of-type{margin-top:0}
+h3{font-size:1.2rem; line-height:1.3; margin:0 0 .35rem}
+.tag{
+  font-size:.7rem; font-weight:500; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--accent); margin-left:.5rem; white-space:nowrap; vertical-align:middle;
+}
+article{margin-bottom:2.2rem}
+article p{margin:.2rem 0 .5rem}
+.stack{color:var(--muted); font-size:.9rem}
 
-/* ---- Signature: the frontier rule.
-   A boundary drawn as discrete cells, the way a frontier node marks
-   the edge between mapped and unmapped space. ---- */
-.frontier-rule{
-  height:3px;
-  border:0;
-  margin:0;
-  background:repeating-linear-gradient(
-    to right,
-    var(--frontier) 0 9px,
-    transparent 9px 15px
-  );
-}
+.pair{display:grid; grid-template-columns:1.2fr 1fr; gap:2rem}
+@media (max-width:600px){ .pair{grid-template-columns:1fr} }
 
-/* ---- Hero ---- */
-.hero{
-  position:relative;
-  padding:clamp(4rem, 12vh, 8rem) 0 clamp(2.5rem, 6vh, 4rem);
-  overflow:hidden;
+.media-row{display:flex; flex-wrap:wrap; gap:.75rem; margin-top:.8rem}
+.media-row:not(:has(figure)){display:none}
+figure.m{
+  margin:0; position:relative; max-width:100%;
+  background:#fff; border:1px solid var(--rule);
 }
-.hero::before{ content:none; }
+figure.m img, figure.m video{display:block; width:100%; height:auto}
 
-/* ---- Hero background: frontier rings sweeping an occupancy grid ---- */
-.hero-map{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-  -webkit-mask-image:linear-gradient(to bottom, #000 35%, transparent 88%);
-          mask-image:linear-gradient(to bottom, #000 35%, transparent 88%);
-}
-.hero-map .grid{ color:var(--unknown); opacity:.17; }
+dl.facts{display:grid; grid-template-columns:8rem 1fr; gap:.4rem 1rem; margin:0}
+dt{color:var(--muted)}
+dd{margin:0}
+@media (max-width:480px){ dl.facts{grid-template-columns:1fr; gap:0} dd{margin-bottom:.7rem} }
 
-/* ---- Gantry: clears the pile onto a stack, then the floor carries it back ---- */
-.rig-svg{
-  width:100%;
-  height:auto;
-  align-self:center;
-  pointer-events:none;
-  filter:drop-shadow(0 4px 6px rgba(20,21,26,.16));
+/* ---------- Edit mode (only active at #edit) ---------- */
+html.edit [contenteditable]{outline:none; border-radius:3px}
+html.edit [contenteditable]:hover{background:rgba(200,50,31,.06)}
+html.edit [contenteditable]:focus{background:rgba(200,50,31,.10); box-shadow:0 0 0 2px rgba(200,50,31,.35)}
+html.edit .media-row{display:flex; min-height:2.2rem; align-items:flex-start}
+html.edit figure.m{resize:horizontal; overflow:hidden; min-width:5rem}
+.ui-btn{
+  font:600 12px system-ui,sans-serif; border:1px solid var(--rule); background:#fff;
+  color:var(--fg); border-radius:6px; padding:.3rem .6rem; cursor:pointer;
 }
-.rig-svg line, .rig-svg rect{ vector-effect:non-scaling-stroke; }
-.rail{ stroke:var(--occupied); stroke-width:4; opacity:.6; stroke-linecap:round; }
-.ground{
-  stroke:var(--occupied); stroke-width:4; opacity:.5;
-  stroke-dasharray:11 9; stroke-linecap:round;
-  animation:conveyor 15s cubic-bezier(.5,0,.4,1) infinite;
+.ui-btn:hover{border-color:var(--accent); color:var(--accent)}
+figure.m .ui-btn{position:absolute; top:6px; z-index:2; opacity:0}
+figure.m .rep{left:6px}
+figure.m .del{right:6px}
+html.edit figure.m:hover .ui-btn{opacity:1}
+#bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:10; display:flex; flex-wrap:wrap;
+  align-items:center; gap:.6rem 1rem; padding:.7rem 1rem; background:#141414; color:#fff;
+  font:13px/1.4 system-ui,sans-serif;
 }
-.carriage{ fill:var(--free-hi); stroke:var(--occupied); stroke-width:3.5; opacity:.75; }
-.mast{ fill:var(--occupied); opacity:.55; }
-.block{ fill:var(--free-hi); stroke:var(--occupied); stroke-width:3.5; opacity:.8; }
-.grip{ fill:var(--frontier); opacity:1; }
+#bar span{flex:1 1 18rem; opacity:.85}
+#bar .ui-btn{background:#fff}
+#bar .primary{background:var(--accent); color:#fff; border-color:var(--accent)}
 
-.head    { animation:headX 15s cubic-bezier(.45,0,.35,1) infinite; }
-.tool    { animation:toolY 15s cubic-bezier(.45,0,.35,1) infinite; }
-.finger-l{ animation:gripL 15s cubic-bezier(.45,0,.35,1) infinite; }
-.finger-r{ animation:gripR 15s cubic-bezier(.45,0,.35,1) infinite; }
-.block-a { animation:blockA 15s cubic-bezier(.45,0,.35,1) infinite; }
-.block-b { animation:blockB 15s cubic-bezier(.45,0,.35,1) infinite; }
-.block-c { animation:blockC 15s cubic-bezier(.45,0,.35,1) infinite; }
-
-@keyframes headX{
-  0%,10%        { transform:translateX(110px); }
-  16.67%,22.67% { transform:translateX(330px); }
-  26.67%,36.67% { transform:translateX(110px); }
-  43.33%,49.33% { transform:translateX(330px); }
-  53.33%,63.33% { transform:translateX(110px); }
-  70%,76%       { transform:translateX(330px); }
-  80%,100%      { transform:translateX(110px); }
-}
-
-@keyframes toolY{
-  0%            { transform:translateY(52px); }
-  4%,6%         { transform:translateY(107px); }
-  10%,16.67%    { transform:translateY(52px); }
-  20.67%,22.67% { transform:translateY(167px); }
-  26.67%        { transform:translateY(52px); }
-  30.67%,32.67% { transform:translateY(137px); }
-  36.67%,43.33% { transform:translateY(52px); }
-  47.33%,49.33% { transform:translateY(137px); }
-  53.33%        { transform:translateY(52px); }
-  57.33%,59.33% { transform:translateY(167px); }
-  63.33%,70%    { transform:translateY(52px); }
-  74%,76%       { transform:translateY(107px); }
-  80%,100%      { transform:translateY(52px); }
-}
-
-@keyframes gripL{
-  0%,4%         { transform:translateX(0); }
-  6%,20.67%     { transform:translateX(4px); }
-  22.67%,30.67% { transform:translateX(0); }
-  32.67%,47.33% { transform:translateX(4px); }
-  49.33%,57.33% { transform:translateX(0); }
-  59.33%,74%    { transform:translateX(4px); }
-  76%,100%      { transform:translateX(0); }
-}
-@keyframes gripR{
-  0%,4%         { transform:translateX(0); }
-  6%,20.67%     { transform:translateX(-4px); }
-  22.67%,30.67% { transform:translateX(0); }
-  32.67%,47.33% { transform:translateX(-4px); }
-  49.33%,57.33% { transform:translateX(0); }
-  59.33%,74%    { transform:translateX(-4px); }
-  76%,100%      { transform:translateX(0); }
-}
-
-@keyframes blockA{
-  0%,6%      { transform:translate(0,0); }
-  10%        { transform:translate(0,-55px); }
-  16.67%     { transform:translate(220px,-55px); }
-  20.67%,80% { transform:translate(220px,60px); }
-  100%       { transform:translate(0,60px); }
-}
-@keyframes blockB{
-  0%,32.67%  { transform:translate(0,0); }
-  36.67%     { transform:translate(0,-85px); }
-  43.33%     { transform:translate(220px,-85px); }
-  47.33%,80% { transform:translate(220px,0); }
-  100%       { transform:translate(0,0); }
-}
-@keyframes blockC{
-  0%,59.33%  { transform:translate(0,0); }
-  63.33%     { transform:translate(0,-115px); }
-  70%        { transform:translate(220px,-115px); }
-  74%,80%    { transform:translate(220px,-60px); }
-  100%       { transform:translate(0,-60px); }
-}
-
-@keyframes conveyor{
-  0%,80% { stroke-dashoffset:0; }
-  100%   { stroke-dashoffset:220; }
-}
-
-.hero .wrap{
-  position:relative;
-  z-index:1;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 22rem;
-  align-items:center;
-  gap:clamp(1.5rem, 4vw, 3rem);
-  max-width:64rem;
-}
+:root{--bg:#f7f7f2;--fg:#202822;--muted:#61695f;--rule:#d9ded4;--accent:#a83926}
+html{scroll-behavior:smooth;scroll-padding-top:2rem}body{font:16px/1.7 "Segoe UI",sans-serif}.wrap{max-width:1040px;padding:0 40px 30px}
+nav{display:flex;align-items:center;justify-content:space-between;padding:27px 0;border-bottom:1px solid var(--rule)}nav div{display:flex;gap:28px}nav a{font-size:13px;text-decoration:none}.wordmark{font-size:22px;font-weight:800;letter-spacing:-1px}.wordmark span,.name-dot{color:var(--accent)}
+header{padding:88px 0 65px;max-width:850px}.eyebrow,.project-label{font:600 11px/1.5 Consolas,monospace;letter-spacing:.12em;color:var(--accent)}.eyebrow{margin:0 0 24px}h1{font-size:clamp(48px,7.8vw,84px);font-weight:600;letter-spacing:-.065em;margin-bottom:22px;line-height:1.05}.lede{font-size:clamp(22px,3vw,32px);line-height:1.35;letter-spacing:-.025em;color:var(--fg);margin-bottom:20px}.intro-note{color:var(--muted);font-size:14px;margin-bottom:23px}.links{gap:24px}.links a{font-size:13px;text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:3px}.links a:after{content:' ↗';color:var(--accent)}
+section{margin-top:34px}h2{display:flex;justify-content:space-between;font:500 11px/1.5 Consolas,monospace;letter-spacing:.08em;padding-bottom:14px;margin-bottom:28px}h2 span:last-child{text-transform:none;letter-spacing:0;color:var(--muted)}.pair{gap:38px;grid-template-columns:1fr 1fr}.pair article{margin-bottom:25px}.pair h3{font-size:18px;letter-spacing:-.02em;max-width:330px}.pair p{font-size:14px;color:var(--muted)}.tag{display:block;margin:9px 0 12px;font:500 10px Consolas,monospace}.tag:before{content:'● ';font-size:9px;color:#52764a}
+#projects{margin-top:35px}#projects article{padding:8px 0 34px;margin-bottom:28px;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr;column-gap:50px}#projects h3{font-size:29px;font-weight:600;letter-spacing:-.04em;line-height:1.2;grid-column:1;max-width:360px}#projects .project-label{grid-column:1;margin-bottom:13px}#projects article>p:not(.project-label):not(.stack){grid-column:2;grid-row:2 / span 2;font-size:14px;color:var(--muted);margin:0}#projects .stack{grid-column:2;font:11px/1.8 Consolas,monospace;margin-top:20px}#projects .media-row{grid-column:1 / -1}.metrics{display:flex;gap:23px;grid-column:1;align-self:start;margin-top:25px}.metrics span{font-size:10px;color:var(--muted)}.metrics strong{display:block;font:500 25px/1.2 Consolas,monospace;color:var(--accent);margin-bottom:8px}
+dl.facts{font-size:14px;grid-template-columns:155px 1fr;gap:12px 24px;margin:34px 0 55px}.contact{padding:40px 0 55px;border-top:1px solid var(--rule)}.contact .eyebrow{margin-bottom:15px}.contact h2{display:block;border:0;text-transform:none;letter-spacing:-.035em;font:500 35px/1.2 "Segoe UI",sans-serif;color:var(--fg);padding:0;margin:0 0 15px}.contact>a{font-size:17px;text-decoration:none}.contact>a span{color:var(--accent);margin-left:15px}footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--rule);padding:20px 0 0;color:var(--muted);font-size:11px}footer a{text-decoration:none}.skip{position:absolute;left:16px;top:-100px;background:var(--fg);color:white;padding:10px;z-index:20}.skip:focus{top:10px}a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:5px}
+@media(max-width:700px){.wrap{padding:0 23px 24px}nav div{gap:20px}header{padding:60px 0 38px}.pair{grid-template-columns:1fr;gap:10px}#projects article{display:block;padding-bottom:30px;margin-bottom:28px}#projects h3{font-size:28px;max-width:none}#projects article>p:not(.project-label):not(.stack){margin-top:24px}.metrics{margin-top:22px;margin-bottom:24px;gap:28px}h2 span:last-child{display:none}dl.facts{grid-template-columns:1fr;gap:2px}dl.facts dd{margin-bottom:15px}footer span:nth-child(2){display:none}.desktop-break{display:none}.contact h2{font-size:30px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 
-.eyebrow{
-  font-family:var(--mono);
-  font-size:.72rem;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  color:var(--unknown);
-  margin:0 0 1.4rem;
-}
-.name{
-  font-family:var(--display);
-  font-weight:800;
-  font-size:clamp(2.9rem, 11vw, 6.5rem);
-  line-height:.92;
-  letter-spacing:-.035em;
-  margin:0;
-}
-.name .dot{ color:var(--frontier); }
-.name .hl{ color:var(--frontier); }
-
-.lede{
-  max-width:var(--measure);
-  margin:1.6rem 0 0;
-  font-size:clamp(1.05rem, 1rem + 0.4vw, 1.3rem);
-  line-height:1.5;
-}
-
-.contact{
-  display:flex; flex-wrap:wrap; gap:.45rem 1.4rem;
-  margin:2.2rem 0 0; padding:0; list-style:none;
-  font-family:var(--mono); font-size:.85rem;
-}
-.contact a{ border-bottom:1px solid var(--unknown); padding-bottom:1px; }
-.contact a:hover{ border-color:var(--frontier); color:var(--frontier); }
-
-/* ---- Sections ---- */
-.section{ padding-top:clamp(3rem, 8vh, 5rem); padding-bottom:clamp(3rem, 8vh, 5rem); }
-.section-label{
-  font-family:var(--mono);
-  font-size:.72rem;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  color:var(--unknown);
-  margin:0 0 2rem;
-}
-
-.work-subhead{
-  font-family:var(--mono);
-  font-size:.72rem;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:var(--frontier);
-  margin:0 0 1.4rem;
-}
-.work-subhead:not(:first-of-type){ margin-top:3rem; }
-
-/* ---- Project entries ---- */
-.entry{
-  border-left:2px solid transparent;
-  padding-left:clamp(.85rem, 2vw, 1.4rem);
-  margin-bottom:2.75rem;
-  transition:border-color .18s ease;
-}
-.entry:last-child{ margin-bottom:0; }
-.entry:hover, .entry:focus-within{ border-left-color:var(--frontier); }
-
-.entry-main{
-  display:flex;
-  align-items:flex-start;
-  gap:clamp(1.25rem, 3.5vw, 2.75rem);
-}
-.entry-content{ flex:1 1 auto; min-width:0; }
-
-/* ---- Media panel: gif/screenshot placeholder ---- */
-.entry-media{
-  flex:0 0 clamp(12rem, 30vw, 17rem);
-  width:clamp(12rem, 30vw, 17rem);
-  aspect-ratio:4 / 3;
-  align-self:flex-start;
-  overflow:hidden;
-  border:1px solid rgba(142,142,135,.35);
-  background:
-    repeating-linear-gradient(45deg, rgba(142,142,135,.14) 0 8px, transparent 8px 16px),
-    var(--free-hi);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:.6rem;
-}
-.entry-media span{
-  font-family:var(--mono);
-  font-size:.62rem;
-  letter-spacing:.09em;
-  text-transform:uppercase;
-  color:var(--unknown);
-}
-.entry-media img,
-.entry-media video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.entry-media--stack{
-  width:clamp(8rem, 16vw, 11rem);
-  flex:none;
-  aspect-ratio:4 / 3;
-  margin:1rem auto 0;
-  background:#fff;
-}
-.entry-media--stack img,
-.entry-media--stack video{
-  object-fit:contain;
-}
-
-.currently-row{
-  display:flex;
-  gap:2.5rem;
-  align-items:flex-start;
-}
-.currently-row .entry--currently{
-  flex:1 1 0;
-  min-width:0;
-}
-@media (max-width:480px){
-  .currently-row{ flex-direction:column; }
-}
-
-@media (max-width:700px){
-  .entry-main{ flex-direction:column; }
-  .entry-media{ width:100%; flex-basis:auto; aspect-ratio:16 / 9; }
-}
-
-.entry-head{
-  display:flex; flex-wrap:wrap; align-items:baseline;
-  gap:.5rem .9rem; margin-bottom:.5rem;
-}
-.entry-title{
-  font-family:var(--display);
-  font-weight:600;
-  font-size:clamp(1.2rem, 1.05rem + .55vw, 1.5rem);
-  letter-spacing:-.015em;
-  line-height:1.2;
-  margin:0;
-}
-.status{
-  font-family:var(--mono);
-  font-size:.68rem;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:var(--unknown);
-  white-space:nowrap;
-}
-.status.live::before{
-  content:"";
-  display:inline-block;
-  width:6px; height:6px;
-  margin-right:.45rem;
-  background:var(--frontier);
-  vertical-align:.06em;
-}
-.entry p{ margin:0 0 .7rem; max-width:var(--measure); }
-.entry-main + .stack{ margin-top:.75rem; }
-.stack{
-  font-family:var(--mono);
-  font-size:.78rem;
-  color:var(--unknown);
-  margin:0;
-}
-
-/* ---- Currently: quick, nonchalant status lines ---- */
-.currently{
-  list-style:none;
-  margin:0;
-  padding:0;
-  max-width:var(--measure);
-  display:flex;
-  flex-direction:column;
-  gap:.55rem;
-}
-.currently li{
-  font-family:var(--mono);
-  font-size:.85rem;
-  color:var(--unknown);
-}
-.currently .org{
-  color:var(--frontier);
-}
-.entry-links{
-  margin:.6rem 0 0;
-  font-family:var(--mono);
-  font-size:.8rem;
-}
-.entry-links a{
-  color:var(--frontier);
-  border-bottom:1px solid transparent;
-}
-.entry-links a:hover{ border-bottom-color:var(--frontier); }
-
-/* ---- Education ---- */
-.facts{ margin:0; max-width:var(--measure); }
-.facts div{
-  display:flex; flex-wrap:wrap; gap:.3rem .9rem;
-  padding:.65rem 0;
-  border-bottom:1px solid rgba(142,142,135,.3);
-}
-.facts dt{
-  font-family:var(--mono);
-  font-size:.75rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--unknown);
-  flex:0 0 9.5rem;
-}
-.facts dd{ margin:0; flex:1 1 14rem; }
-
-/* ---- Interests ---- */
-.interests{
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr));
-  gap:1.75rem 2.5rem;
-  margin:0;
-  padding:0;
-  list-style:none;
-}
-.interests li{ max-width:34ch; }
-.interests h3{
-  font-family:var(--mono);
-  font-size:.75rem;
-  font-weight:500;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:var(--frontier);
-  margin:0 0 .35rem;
-}
-.interests p{ margin:0; font-size:.97rem; line-height:1.55; }
-
-/* ---- Footer ---- */
-.foot{
-  padding:2.5rem 0 3.5rem;
-  font-family:var(--mono);
-  font-size:.75rem;
-  color:var(--unknown);
-}
-
-/* ---- Motion ---- */
-@keyframes rise{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
-.hero .eyebrow{ animation:rise .5s ease both; }
-.name{ position:relative; display:inline-block; }
-
-/* ---- Occasional glints across the name ---- */
-.spark{
-  position:absolute;
-  width:.15em;
-  height:.15em;
-  fill:var(--glint);
-  opacity:0;
-  pointer-events:none;
-  overflow:visible;
-  filter:drop-shadow(0 0 .08em rgba(217,160,23,.75));
-  animation:glint 7s ease-in-out infinite;
-}
-@keyframes glint{
-  0%,100% { opacity:0; transform:scale(.15) rotate(-30deg); }
-  5%      { opacity:1; transform:scale(1) rotate(0deg); }
-  15%     { opacity:0; transform:scale(.4) rotate(25deg); }
-}
-.hero .lede{ animation:rise .5s .12s ease both; }
-.hero .contact{ animation:rise .5s .18s ease both; }
-
-/* ---- Scroll scrub: reveal progress is driven directly by scroll position ---- */
-.reveal-item{
-  --p: 0;
-  opacity: var(--p);
-  transform: translateY(calc((1 - var(--p)) * 34px));
-  filter: blur(calc((1 - var(--p)) * 4px));
-  transition: opacity 70ms linear, transform 70ms linear, filter 70ms linear;
-  will-change:opacity, transform, filter;
-}
-
-/* ---- Frontier scan rail: a vertical "explored so far" readout ---- */
-.scan-rail{
-  position:fixed;
-  top:0; right:0; bottom:0;
-  width:5px;
-  z-index:60;
-  background:repeating-linear-gradient(to bottom, var(--unknown) 0 9px, transparent 9px 15px);
-  opacity:.4;
-  pointer-events:none;
-}
-.scan-fill{
-  position:absolute;
-  top:0; left:0; width:100%;
-  height:0%;
-  background:linear-gradient(to bottom, var(--frontier), var(--glint));
-  box-shadow:0 0 14px rgba(206,42,22,.65);
-}
-.scan-marker{
-  position:absolute;
-  left:50%; top:0%;
-  width:9px; height:9px;
-  margin:-4.5px 0 0 -4.5px;
-  border-radius:50%;
-  background:var(--frontier);
-  box-shadow:0 0 10px 3px rgba(206,42,22,.55);
-}
-@media (max-width:700px){ .scan-rail{ display:none; } }
-
-@media (prefers-reduced-motion: reduce){
-  .reveal-item{ --p:1 !important; filter:none !important; }
-}
-
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{ animation:none !important; transition:none !important; }
-}
-
-/* ---- Media carousel ---- */
-.carousel-media{
-  padding: 0;
-  overflow: hidden;
-  position: relative;
-  align-self: flex-start;
-  aspect-ratio: unset;      /* override the 4/3 from .entry-media */
-  min-height: 8rem;
-}
-.carousel-track{
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  height: 100%;
-}
-.carousel-track::-webkit-scrollbar{ display: none; }
-.carousel-slide{
-  flex: 0 0 100%;
-  height: 100%;
-  scroll-snap-align: start;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--free-hi);
-}
-.carousel-slide video,
-.carousel-slide img{
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.carousel-dots{
-  position: absolute;
-  bottom: .5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: .35rem;
-  pointer-events: none;
-}
-.carousel-dots .dot{
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--unknown);
-  opacity: .5;
-  transition: opacity .2s, background .2s;
-}
-.carousel-dots .dot.active{
-  background: var(--frontier);
-  opacity: 1;
-}
-.carousel-btn{
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(20,21,26,.55);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition: background .15s;
-  padding: 0;
-}
-.carousel-btn:hover{ background: var(--frontier); }
-.carousel-prev{ left: .5rem; }
-.carousel-next{ right: .5rem; }
-
-/* ---- Responsive overrides (must come last to win cascade) ---- */
-@media (max-width: 900px){
-  .hero .wrap{
-    grid-template-columns:1fr;
-    justify-items:center;
-    text-align:center;
-  }
-  .hero-copy{ width:100%; }
-  .lede{ max-width:100%; }
-  .contact{ justify-content:center; }
-  .rig-svg{
-    display:block;
-    width:min(22rem, 90vw);
-    margin:0 auto;
-  }
-}
-
-@media (max-width: 600px){
-  .hero{
-    padding-top: clamp(2rem, 8vh, 3.5rem);
-    padding-bottom: clamp(1.5rem, 4vh, 2.5rem);
-  }
-  .eyebrow{
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .contact{
-    gap: .5rem .9rem;
-  }
-  .entry-head{
-    flex-direction: column;
-    gap: .2rem;
-  }
-
-  /* Facts: stack label above value, prevent flex-basis height bug */
-  .facts div{
-    flex-direction: column;
-    gap: .15rem;
-    padding: .75rem 0;
-  }
-  .facts dt{
-    flex: 0 0 auto;
-  }
-  .facts dd{
-    flex: 0 0 auto;
-    font-size: 1rem;
-  }
-
-  /* Interests: single column */
-  .interests{
-    grid-template-columns: 1fr;
-  }
-}
+.pair .media-row{margin-top:20px}.pair figure.m{width:100%;border:0;background:#eeefe8}.pair figure.m img,.pair figure.m video{width:100%;height:240px;object-fit:contain}#projects .media-row{margin-top:24px;gap:16px}#projects .media-row figure.m{flex:1;min-width:0;width:calc(50% - 8px)!important;border:0;background:#eeefe8}#projects figure.m img,#projects figure.m video{height:270px;object-fit:contain}video{background:#eeefe8}@media(max-width:700px){#projects .media-row{display:block}#projects .media-row figure.m{width:100%!important;margin-top:12px}.pair figure.m img,.pair figure.m video{height:220px}}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a><div class="wrap">
+<nav aria-label="Main navigation"><a class="wordmark" href="#">AR<span>.</span></a><div><a href="#projects">Projects</a><a href="#background">About</a><a href="mailto:anveshr2@illinois.edu">Contact ↗</a></div></nav>
 
-<div class="scan-rail" aria-hidden="true">
-  <div class="scan-fill"><div class="scan-marker"></div></div>
-</div>
-
-<header class="hero">
-  <svg class="hero-map" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-    <defs>
-      <pattern id="occupancy" width="14" height="14" patternUnits="userSpaceOnUse">
-        <path d="M14 0H0V14" fill="none" stroke="currentColor" stroke-width="1"/>
-      </pattern>
-    </defs>
-    <rect class="grid" width="1200" height="600" fill="url(#occupancy)"/>
-  </svg>
-
-  <div class="wrap">
-    <div class="hero-copy">
-    <p class="eyebrow">Robotics &middot; Urbana&ndash;Champaign</p>
-    <h1 class="name"><span class="hl">Anv</span>esh<br><span class="hl">Red</span>dy<span class="dot">.</span><svg class="spark" style="left:5%;  top:.06em;  animation-delay:0s"    viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:43%; top:.34em;  animation-delay:1.6s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:80%; top:.04em;  animation-delay:3.2s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:18%; top:1.06em; animation-delay:4.5s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg><svg class="spark" style="left:64%; top:1.3em;  animation-delay:5.8s"  viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0c1 8.4 3.6 11 12 12-8.4 1-11 3.6-12 12-1-8.4-3.6-11-12-12 8.4-1 11-3.6 12-12Z"/></svg></h1>
-    <p class="lede">
-      Engineering mechanics student at UIUC interested in Robotics and Startups.
-    </p>
-    <ul class="contact">
-      <li><a href="mailto:anveshr2@illinois.edu">email</a></li>
-      <li><a href="https://github.com/anvi-red">github</a></li>
-      <li><a href="https://www.linkedin.com/in/anveshr2/">linkedin</a></li>
-      <li><a href="/resume.pdf">resume &darr;</a></li>
-    </ul>
-    </div>
-
-    <svg class="rig-svg" viewBox="0 0 460 240" aria-hidden="true" focusable="false">
-      <defs>
-        <clipPath id="railclip">
-          <rect x="0" y="10" width="460" height="230"/>
-        </clipPath>
-      </defs>
-
-      <line class="rail" x1="20" y1="18" x2="440" y2="18"/>
-      <line class="ground" x1="10" y1="201" x2="450" y2="201"/>
-
-      <rect class="block block-a" x="95" y="110" width="30" height="30"/>
-      <rect class="block block-b" x="95" y="140" width="30" height="30"/>
-      <rect class="block block-c" x="95" y="170" width="30" height="30"/>
-
-      <g clip-path="url(#railclip)">
-        <g class="head">
-          <g class="tool">
-            <rect class="mast" x="-4.5" y="-200" width="9" height="200"/>
-            <rect class="grip palm" x="-27" y="-5" width="54" height="9"/>
-            <rect class="grip finger-l" x="-27" y="3" width="8" height="26"/>
-            <rect class="grip finger-r" x="19" y="3" width="8" height="26"/>
-          </g>
-          <rect class="carriage" x="-22" y="8" width="44" height="20"/>
-        </g>
-      </g>
-    </svg>
-  </div>
+<header><p class="eyebrow">ENGINEERING MECHANICS · UIUC</p>
+  <h1>Anvesh Reddy<span class="name-dot">.</span></h1>
+  <p class="lede">Building at the intersection of<br class="desktop-break"> mechanics, robotics, and autonomy.</p>
+  <p class="intro-note">Engineering mechanics student at UIUC, interested in robotics and startups.</p><p class="links">
+    <a href="mailto:anveshr2@illinois.edu">Email</a>
+    <a href="https://github.com/anvi-red">GitHub</a>
+    <a href="https://www.linkedin.com/in/anveshr2/">LinkedIn</a><a href="resume.pdf">Résumé</a>
+    
+  </p>
 </header>
 
-<hr class="frontier-rule">
+<main id="main">
 
-<main>
-  <section class="section wrap" aria-labelledby="currently">
-    <p class="section-label reveal-item" id="currently">Currently at</p>
+<section>
+  <h2><span>01 / Currently</span><span>Research &amp; teams</span></h2>
+  <div class="pair">
+    <article>
+      <h3>Derek Hoiem Computer Vision Lab <span class="tag">In progress</span></h3>
+      <p>Researching VLAs for self-supervised reinforcement learning.</p>
+      <div class="media-row">
+        <figure class="m" style="width:100%"><video controls loop muted playsinline preload="metadata" src="media/vla-research.mp4"></video></figure>
+      </div>
+    </article>
+    <article>
+      <h3>SigRobotics <span class="tag">In progress</span></h3>
+      <p>Designing a mechanical hand for the K1 Booster humanoid.</p>
+      <div class="media-row">
+        <figure class="m" style="width:100%"><img src="media/sigrobotics-hand.png" alt="K1 Booster humanoid hand CAD render"></figure>
+      </div>
+    </article>
+  </div>
+</section>
 
-    <div class="currently-row">
-      <article class="entry entry--currently reveal-item d1">
-        <div class="entry-head">
-          <h2 class="entry-title">Derek Hoiem Computer Vision Lab</h2>
-          <span class="status live">In progress</span>
-        </div>
-        <div class="entry-content">
-          <p>Researching VLAs for self-supervised reinforcement learning.</p>
-        </div>
-        <div class="entry-media entry-media--stack">
-          <video autoplay loop muted playsinline>
-            <source src="media/vla-research.mp4" type="video/mp4">
-          </video>
-        </div>
-      </article>
+<section id="projects">
+  <h2><span>02 / Selected work</span><span>Design → Build → Test</span></h2>
 
-      <article class="entry entry--currently reveal-item d2">
-        <div class="entry-head">
-          <h2 class="entry-title">SigRobotics</h2>
-          <span class="status live">In progress</span>
-        </div>
-        <div class="entry-content">
-          <p>Designing a mechanical hand for the K1 Booster humanoid.</p>
-        </div>
-        <div class="entry-media entry-media--stack">
-          <img src="media/sigrobotics-hand.png" alt="K1 Booster humanoid hand CAD render">
-        </div>
-      </article>
+  
+  <article>
+    <p class="project-label">01 — MECHANICAL DESIGN</p><h3>Mechanical Gripper</h3><div class="metrics"><span><strong>47.5%</strong> mass reduction</span><span><strong>17.7 N</strong> grip force</span><span><strong>4.86×</strong> factor of safety</span></div>
+    <p>A 3D-printed, nine-part parallel-jaw gripper producing 17.7&nbsp;N of grip force from a 6V servo through a three-gear, 1.5:1 reduction. A six-point parametric FEA study on jaw thickness and geometry cut mass by 47.5% while holding a 4.86&times; factor of safety, backed by a regression model predicting stress and displacement under load.</p>
+    <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; GD&amp;T &middot; ASME Y14.5</p>
+    <div class="media-row"></div>
+  </article>
+
+  
+  <article>
+    <p class="project-label">02 — ROBOTICS &amp; AUTONOMY</p><h3>Autonomous Robot Exploration</h3><div class="metrics"><span><strong>10/10</strong> completed trials</span><span><strong>2.9 min</strong> average run</span></div>
+    <p>An autonomous exploration pipeline for a TurtleBot3 in ROS&nbsp;2/Gazebo, pairing slam_toolbox for real-time SLAM with Nav2 and a custom BFS-based frontier detector. 100% completion across 10 randomized-start trials, averaging 2.9 minutes per run with progress-based frontier blacklisting to prevent navigation loops.</p>
+    <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
+    <div class="media-row"></div>
+  </article>
+
+  <article>
+    <p class="project-label">03 — PERCEPTION &amp; CONTROL</p><h3>UR3 Robotic Arm Drawing Pipeline</h3><div class="metrics"><span><strong>6 DOF</strong> inverse kinematics</span><span><strong>17%</strong> less travel</span></div>
+    <p>A closed-form 6-DOF inverse-kinematics solver for a UR3, converting target end-effector poses into joint commands on physical hardware. A ROS/Python perception-to-actuation pipeline &mdash; blue-channel segmentation, Canny edge detection, contour extraction &mdash; autonomously draws test images, with nearest-neighbor contour sequencing cutting unnecessary travel by 17%.</p>
+    <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
+    <div class="media-row">
+      <figure class="m" style="width:20rem"><video controls loop muted playsinline preload="metadata" src="media/robotdrawing1-ezgif.com-video-subtitles.mp4"></video></figure>
+      <figure class="m" style="width:20rem"><img src="media/ezgif.com-gif-maker.gif" alt="Robot arm drawing result"></figure>
     </div>
-  </section>
+  </article>
+</section>
 
-  <hr class="frontier-rule">
+<section id="background">
+  <h2><span>03 / Background</span><span>Education</span></h2>
+  <dl class="facts">
+    <dt>University</dt><dd>University of Illinois Urbana&ndash;Champaign</dd>
+    <dt>Degree</dt><dd>B.S. Engineering Mechanics, robotics concentration &middot; CS &amp; Math minors</dd>
+    <dt>Graduating</dt><dd>May 2028</dd>
+  </dl>
+</section>
 
-  <section class="section wrap" aria-labelledby="work">
-    <p class="section-label reveal-item" id="work">Projects</p>
-
-    <h3 class="work-subhead reveal-item d1">Mechanical Design</h3>
-
-    <article class="entry reveal-item d1">
-      <div class="entry-head">
-        <h2 class="entry-title">Mechanical Gripper</h2>
-      </div>
-      <div class="entry-main">
-        <div class="entry-content">
-          <p>
-            A 3D-printed, nine-part parallel-jaw gripper producing 17.7&nbsp;N of grip
-            force from a 6V servo through a three-gear, 1.5:1 reduction. A six-point
-            parametric FEA study on jaw thickness and geometry cut mass by 47.5% while
-            holding a 4.86&times; factor of safety, backed by a regression model
-            predicting stress and displacement under load.
-          </p>
-        </div>
-        <div class="entry-media"><span>gif / img<br>placeholder</span></div>
-      </div>
-      <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; GD&amp;T &middot; ASME Y14.5</p>
-    </article>
-
-    <h3 class="work-subhead reveal-item d2">Robotics &amp; Autonomy</h3>
-
-    <article class="entry reveal-item d2">
-      <div class="entry-head">
-        <h2 class="entry-title">Autonomous Robot Exploration</h2>
-      </div>
-      <div class="entry-main">
-        <div class="entry-content">
-          <p>
-            An autonomous exploration pipeline for a TurtleBot3 in ROS&nbsp;2/Gazebo,
-            pairing slam_toolbox for real-time SLAM with Nav2 and a custom
-            BFS-based frontier detector. 100% completion across 10 randomized-start
-            trials, averaging 2.9 minutes per run with progress-based frontier
-            blacklisting to prevent navigation loops.
-          </p>
-        </div>
-        <div class="entry-media"><span>gif / img<br>placeholder</span></div>
-      </div>
-      <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
-    </article>
-
-    <article class="entry reveal-item d3">
-      <div class="entry-head">
-        <h2 class="entry-title">UR3 Robotic Arm Drawing Pipeline</h2>
-      </div>
-      <div class="entry-main">
-        <div class="entry-content">
-          <p>
-            A closed-form 6-DOF inverse-kinematics solver for a UR3, converting target
-            end-effector poses into joint commands on physical hardware. A ROS/Python
-            perception-to-actuation pipeline &mdash; blue-channel segmentation, Canny
-            edge detection, contour extraction &mdash; autonomously draws test images,
-            with nearest-neighbor contour sequencing cutting unnecessary travel by 17%.
-          </p>
-        </div>
-        <div class="entry-media carousel-media">
-          <div class="carousel-track">
-            <div class="carousel-slide">
-              <video autoplay loop muted playsinline>
-                <source src="media/robotdrawing1-ezgif.com-video-subtitles.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class="carousel-slide">
-              <img src="media/ezgif.com-gif-maker.gif" alt="Robot arm drawing result">
-            </div>
-          </div>
-          <button class="carousel-btn carousel-prev" aria-label="Previous">&#8592;</button>
-          <button class="carousel-btn carousel-next" aria-label="Next">&#8594;</button>
-          <div class="carousel-dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-          </div>
-        </div>
-      </div>
-      <p class="stack">UR3 &middot; OpenCV &middot; Python &middot; forward / inverse kinematics</p>
-    </article>
-
-  </section>
-
-  <hr class="frontier-rule">
-
-  <section class="section wrap" aria-labelledby="bg">
-    <p class="section-label reveal-item" id="bg">Background</p>
-    <dl class="facts">
-      <div class="reveal-item d1">
-        <dt>University</dt>
-        <dd>University of Illinois Urbana&ndash;Champaign</dd>
-      </div>
-      <div class="reveal-item d2">
-        <dt>Degree</dt>
-        <dd>B.S. Engineering Mechanics, robotics concentration &middot; CS &amp; Math minors</dd>
-      </div>
-      <div class="reveal-item d3">
-        <dt>Graduating</dt>
-        <dd>May 2028</dd>
-      </div>
-    </dl>
-  </section>
-
-  <!-- OFF THE CLOCK — commented out, revisit later
-  <hr class="frontier-rule">
-
-  <section class="section wrap" aria-labelledby="off">
-    <p class="section-label reveal-item" id="off">Off the clock</p>
-    <ul class="interests">
-      <li class="reveal-item d1">
-        <h3>Tennis</h3>
-        <p>On court regularly &mdash; the one hobby that has survived every semester.</p>
-      </li>
-      <li class="reveal-item d2">
-        <h3>Lifting</h3>
-        <p>Progressive overload, tracked. Slow, boring, and it works.</p>
-      </li>
-      <li class="reveal-item d3">
-        <h3>Markets</h3>
-        <p>Follow financial markets closely, mostly for the same reason I like control systems: feedback loops and how badly people model risk.</p>
-      </li>
-      <li class="reveal-item d4">
-        <h3>Startups</h3>
-        <p>Read a lot about venture and early-stage companies &mdash; specifically how research gets out of a lab and into something people actually use.</p>
-      </li>
-      <li class="reveal-item d5">
-        <h3>Film</h3>
-        <p>Watch more of it than I should. Drawn to films that are doing something structurally strange.</p>
-      </li>
-    </ul>
-  </section>
-  -->
-</main>
-
-<hr class="frontier-rule">
-
-<footer class="foot wrap">
-  <p>anv.red &middot; Anvesh Reddy</p>
-</footer>
+<section class="contact"><p class="eyebrow">LET’S CONNECT</p><h2>Have something in mind?</h2><a href="mailto:anveshr2@illinois.edu">anveshr2@illinois.edu <span aria-hidden="true">↗</span></a></section></main>
+<footer><span>Anvesh Reddy</span><span>Mechanics. Robotics. What’s next.</span><a href="#">Back to top ↑</a></footer>
+</div>
 
 <script>
-(function(){
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var items = Array.prototype.slice.call(document.querySelectorAll('.reveal-item'));
+/* Edit mode: open this page with #edit on the end of the address.
+   Visitors never see any of this unless they add #edit themselves,
+   and even then nothing is saved anywhere except a file they download. */
+(function () {
+  if (location.hash !== '#edit') return;
 
-  if(reduced){
-    items.forEach(function(el){ el.style.setProperty('--p', 1); });
-  } else {
-    var ticking = false;
+  var root = document.documentElement;
+  root.classList.add('edit');
 
-    var update = function(){
-      ticking = false;
-      var vh = window.innerHeight;
-      var revealLine = vh * 0.85;   /* where items start resolving into view */
-      items.forEach(function(el){
-        var rect = el.getBoundingClientRect();
-        var span = Math.max(rect.height * 0.6, 60) + 60;
-        var p = (revealLine - rect.top) / span;
-        p = Math.max(0, Math.min(1, p));
-        el.style.setProperty('--p', p.toFixed(3));
-      });
-    };
-
-    var onScroll = function(){
-      if(!ticking){
-        ticking = true;
-        requestAnimationFrame(update);
-      }
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-  }
-
-  /* Frontier scan rail: fills top-to-bottom as you explore the page */
-  var fill = document.querySelector('.scan-fill');
-  if(fill){
-    var onScroll = function(){
-      var doc = document.documentElement;
-      var top = doc.scrollTop || document.body.scrollTop;
-      var max = (doc.scrollHeight || document.body.scrollHeight) - doc.clientHeight;
-      var pct = max > 0 ? Math.min(1, Math.max(0, top / max)) : 0;
-      fill.style.height = (pct * 100) + '%';
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-  }
-
-  /* Subtle parallax drift on the hero occupancy grid */
-  var heroMap = document.querySelector('.hero-map');
-  if(heroMap && !reduced){
-    var onParallax = function(){
-      var y = window.scrollY || window.pageYOffset;
-      heroMap.style.transform = 'translateY(' + (y * 0.12) + 'px)';
-    };
-    window.addEventListener('scroll', onParallax, { passive: true });
-  }
-})();
-
-/* Carousel — arrows + dot sync + media play/pause */
-(function(){
-  document.querySelectorAll('.carousel-media').forEach(function(media){
-    var track  = media.querySelector('.carousel-track');
-    var dots   = media.querySelectorAll('.dot');
-    var prev   = media.querySelector('.carousel-prev');
-    var next   = media.querySelector('.carousel-next');
-    var slides = track ? track.querySelectorAll('.carousel-slide') : [];
-    if (!track || !slides.length) return;
-
-    var total = slides.length;
-
-    function syncMedia(idx){
-      slides.forEach(function(slide, i){
-        var vid = slide.querySelector('video');
-        if (!vid) return;
-        if (i === idx) { vid.play(); } else { vid.pause(); }
-      });
-    }
-
-    function goTo(idx){
-      track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
-      syncMedia(idx);
-    }
-    function currentIdx(){
-      return Math.round(track.scrollLeft / track.clientWidth);
-    }
-
-    track.addEventListener('scroll', function(){
-      var idx = currentIdx();
-      dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
-      if (prev) prev.style.opacity = idx === 0 ? '0.3' : '1';
-      if (next) next.style.opacity = idx === total - 1 ? '0.3' : '1';
-    }, { passive: true });
-
-    if (prev) prev.addEventListener('click', function(){ goTo(Math.max(0, currentIdx() - 1)); });
-    if (next) next.addEventListener('click', function(){ goTo(Math.min(total - 1, currentIdx() + 1)); });
-
-    /* Initial state */
-    if (prev) prev.style.opacity = '0.3';
-    syncMedia(0);
+  var dirty = false;
+  var EDITABLE = 'h1,h2,h3,h4,p,.tag,dt,dd,.links a';
+  document.querySelectorAll(EDITABLE).forEach(function (el) {
+    el.setAttribute('contenteditable', 'true');
+  });
+  document.addEventListener('input', function () { dirty = true; });
+  window.addEventListener('beforeunload', function (e) {
+    if (dirty) { e.preventDefault(); e.returnValue = ''; }
   });
 
-  /* Pin each carousel height to its sibling text column */
-  function syncCarouselHeights(){
-    document.querySelectorAll('.entry-main').forEach(function(main){
-      var content  = main.querySelector('.entry-content');
-      var carousel = main.querySelector('.carousel-media');
-      if (!content || !carousel) return;
-      carousel.style.height = '';
-      if (window.innerWidth > 700){
-        carousel.style.height = content.offsetHeight + 'px';
-      }
-    });
+  // paste as plain text so pasted styles don't leak in
+  document.addEventListener('paste', function (e) {
+    if (e.target && e.target.isContentEditable) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, t);
+    }
+  });
+
+  function btn(label, cls) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ui-btn' + (cls ? ' ' + cls : '');
+    b.textContent = label;
+    b.setAttribute('data-ui', '');
+    b.contentEditable = 'false';
+    return b;
   }
-  window.addEventListener('load',   syncCarouselHeights);
-  window.addEventListener('resize', syncCarouselHeights);
+
+  // one hidden file picker shared by every button
+  var picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*,video/*';
+  picker.hidden = true;
+  picker.setAttribute('data-ui', '');
+  document.body.appendChild(picker);
+  var onPick = null;
+  picker.addEventListener('change', function () {
+    var f = picker.files[0];
+    if (f && onPick) { onPick(f); dirty = true; }
+    picker.value = '';
+  });
+  function pickFile(cb) { onPick = cb; picker.click(); }
+
+  function makeMedia(file) {
+    var url = URL.createObjectURL(file), el;
+    if (file.type.indexOf('video') === 0) {
+      el = document.createElement('video');
+      ['controls', 'loop', 'muted', 'playsinline'].forEach(function (a) { el.setAttribute(a, ''); });
+      el.muted = true;
+    } else {
+      el = document.createElement('img');
+      el.alt = '';
+    }
+    el.src = url;
+    // on export, the page points at media/<filename> -- copy the file there
+    el.dataset.path = 'media/' + file.name;
+    return el;
+  }
+
+  function addFigureUI(fig) {
+    if (fig.querySelector('[data-ui]')) return;
+    var rep = btn('Replace', 'rep'), del = btn('Remove', 'del');
+    rep.onclick = function () {
+      pickFile(function (f) { fig.querySelector('img,video').replaceWith(makeMedia(f)); });
+    };
+    del.onclick = function () { fig.remove(); dirty = true; };
+    fig.append(rep, del);
+  }
+
+  function newFigure(file) {
+    var f = document.createElement('figure');
+    f.className = 'm';
+    f.style.width = '20rem';
+    f.appendChild(makeMedia(file));
+    addFigureUI(f);
+    return f;
+  }
+
+  document.querySelectorAll('figure.m').forEach(addFigureUI);
+  document.querySelectorAll('.media-row').forEach(function (row) {
+    var add = btn('+ Add image / video');
+    add.onclick = function () {
+      pickFile(function (f) { row.insertBefore(newFigure(f), add); });
+    };
+    row.appendChild(add);
+  });
+
+  function serialize() {
+    var c = document.documentElement.cloneNode(true);
+    c.classList.remove('edit');
+    if (!c.getAttribute('class')) c.removeAttribute('class');
+    c.querySelectorAll('[data-ui]').forEach(function (n) { n.remove(); });
+    c.querySelectorAll('[contenteditable]').forEach(function (n) { n.removeAttribute('contenteditable'); });
+    c.querySelectorAll('[data-path]').forEach(function (n) {
+      n.setAttribute('src', n.getAttribute('data-path'));
+      n.removeAttribute('data-path');
+    });
+    return '<!doctype html>\n' + c.outerHTML;
+  }
+
+  var bar = document.createElement('div');
+  bar.id = 'bar';
+  bar.setAttribute('data-ui', '');
+  var msg = document.createElement('span');
+  msg.textContent = 'Editing: click any text to type. Drag a media corner to resize. Hover media for Replace / Remove.';
+  var dl = btn('Download index.html', 'primary');
+  dl.onclick = function () {
+    var blob = new Blob([serialize()], { type: 'text/html' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    dirty = false;
+  };
+  var ex = btn('Exit');
+  ex.onclick = function () {
+    if (dirty && !confirm('Leave without downloading? Your edits will be lost.')) return;
+    dirty = false;
+    location.hash = '';
+    location.reload();
+  };
+  bar.append(msg, dl, ex);
+  document.body.appendChild(bar);
 })();
 </script>
-
 </body>
 </html>

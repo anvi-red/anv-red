@@ -1,0 +1,9 @@
+{
+  "name": "anv-red-portfolio",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "dev": "node scripts/preview.mjs",
+    "publish": "node scripts/publish.mjs"
+  }
+}
