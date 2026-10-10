@@ -94,10 +94,9 @@ dl.facts{font-size:14px;grid-template-columns:155px 1fr;gap:12px 24px;margin:34p
 
 .pair .media-row{margin-top:20px}.pair figure.m{width:100%;border:0;background:#eeefe8}.pair figure.m img,.pair figure.m video{width:100%;height:240px;object-fit:contain}#projects .media-row{margin-top:24px;gap:16px}#projects .media-row figure.m{flex:1;min-width:0;width:calc(50% - 8px)!important;border:0;background:#eeefe8}#projects figure.m img,#projects figure.m video{height:270px;object-fit:contain}video{background:#eeefe8}@media(max-width:700px){#projects .media-row{display:block}#projects .media-row figure.m{width:100%!important;margin-top:12px}.pair figure.m img,.pair figure.m video{height:220px}}
 
-#projects article.exploration-project{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
-.project-copy{min-width:0}.project-copy>p:not(.project-label){font-size:14px;color:var(--muted);margin:22px 0 0}.project-copy .metrics{margin:24px 0}.project-copy .project-source a{font-size:12px}.project-gallery{min-width:0;margin-top:5px}.gallery-slide{margin:0}.gallery-slide[hidden],.gallery-controls[hidden]{display:none!important}.gallery-slide>video,.gallery-slide>a{display:block;width:100%;height:auto;aspect-ratio:4/3;background:#eeefe8}.gallery-slide>video,.gallery-slide img{object-fit:contain}.gallery-slide img{display:block;width:100%;height:100%}.gallery-slide a:focus-visible{outline-offset:3px}.gallery-slide figcaption{font-size:11px;line-height:1.6;color:var(--muted);min-height:44px;padding-top:12px}.gallery-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}.gallery-controls button{width:44px;height:44px;border:1px solid var(--rule);background:transparent;color:var(--fg);font:20px system-ui;cursor:pointer;border-radius:50%}.gallery-controls button:hover{border-color:var(--accent);color:var(--accent)}.gallery-count{font:11px Consolas,monospace;color:var(--muted)}
-html.no-gallery-js .gallery-slide[hidden]{display:block!important;margin-top:20px}
-@media(max-width:700px){.project-gallery{margin-top:28px}.gallery-slide figcaption{min-height:0}}
+#projects .exploration-project .project-source{grid-column:2;grid-row:auto;font-size:12px;margin-top:12px}
+.exploration-media{align-items:flex-start}.project-gallery{flex:1;min-width:0;width:calc(50% - 8px)}.gallery-slide{margin:0}.gallery-slide[hidden],.gallery-controls[hidden]{display:none!important}.gallery-slide>a{display:block;width:100%;height:270px;background:#eeefe8}.gallery-slide img{display:block;width:100%;height:100%;object-fit:contain}.gallery-slide a:focus-visible{outline-offset:3px}.gallery-slide figcaption,.exploration-video figcaption{font-size:11px;line-height:1.6;color:var(--muted);min-height:44px;padding-top:12px;background:var(--bg)}.gallery-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}.gallery-controls button{width:44px;height:44px;border:1px solid var(--rule);background:transparent;color:var(--fg);font:20px system-ui;cursor:pointer;border-radius:50%}.gallery-controls button:hover{border-color:var(--accent);color:var(--accent)}.gallery-count{font:11px Consolas,monospace;color:var(--muted)}
+@media(max-width:700px){.exploration-media .project-gallery{width:100%;margin-top:16px}.gallery-slide figcaption,.exploration-video figcaption{min-height:0}}
 
 </style>
 <noscript><style>.gallery-slide[hidden]{display:block!important;margin-top:20px}</style></noscript>
@@ -152,32 +151,33 @@ html.no-gallery-js .gallery-slide[hidden]{display:block!important;margin-top:20p
 
   
   <article class="exploration-project">
-  <div class="project-copy">
+  
     <p class="project-label">02 — ROBOTICS &amp; AUTONOMY</p><h3>Autonomous Robot Exploration</h3><div class="metrics"><span><strong>10/10</strong> completed trials</span><span><strong>2.9 min</strong> average run</span></div>
     <p>An autonomous exploration pipeline for a TurtleBot3 in ROS&nbsp;2/Gazebo, pairing slam_toolbox for real-time SLAM with Nav2 and a custom BFS-based frontier detector. 100% completion across 10 randomized-start trials, averaging 2.9 minutes per run with progress-based frontier blacklisting to prevent navigation loops.</p>
     <p class="stack">ROS 2 &middot; slam_toolbox &middot; Nav2 &middot; C++ / Python &middot; Gazebo</p>
     <p class="project-source"><a href="https://github.com/anvi-red/autonomous-turtlebot">View project on GitHub ↗</a></p>
-  </div>
-  <div class="project-gallery" role="region" aria-roledescription="carousel" aria-label="Autonomous robot exploration media">
+  <div class="media-row exploration-media">
+  <figure class="m exploration-video" style="width:20rem">
+    <video controls muted playsinline preload="metadata" poster="media/turtlebot-map.png" aria-label="TurtleBot autonomous exploration demonstration" src="media/turtlebot-exploration.mp4"></video>
+    <figcaption>Autonomous exploration in simulation.</figcaption>
+  </figure>
+  <div class="project-gallery" role="region" aria-roledescription="carousel" aria-label="Autonomous robot exploration images">
     <div class="gallery-stage">
-      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="1 of 3: Exploration demo">
-        <video controls muted playsinline preload="metadata" poster="media/turtlebot-map.png" aria-label="TurtleBot autonomous exploration demonstration" src="media/turtlebot-exploration.mp4"></video>
-        <figcaption>Autonomous exploration in simulation.</figcaption>
-      </figure>
-      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="2 of 3: Finished map" hidden>
+      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="1 of 2: Finished map">
         <a href="media/turtlebot-map.png" target="_blank" rel="noopener" aria-label="Enlarge finished RViz map (opens in a new tab)"><img loading="lazy" src="media/turtlebot-map.png" alt="RViz map of the simulated arena, with nine cylindrical obstacles and navigation cost layers."></a>
         <figcaption>The mapped environment in RViz. Click to enlarge ↗</figcaption>
       </figure>
-      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="3 of 3: System architecture" hidden>
+      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="2 of 2: System architecture" hidden>
         <a href="media/turtlebot-system.png" target="_blank" rel="noopener" aria-label="Enlarge system architecture diagram (opens in a new tab)"><img loading="lazy" src="media/turtlebot-system.png" alt="System diagram connecting Gazebo lidar and odometry, slam_toolbox mapping, the custom frontier exploration node, Nav2 navigation, and ros_gz_bridge velocity commands."></a>
         <figcaption>From lidar scans to frontier goals and motion. Click to enlarge ↗</figcaption>
       </figure>
     </div>
     <div class="gallery-controls" hidden>
-      <button type="button" class="gallery-prev" aria-label="Previous project media">←</button>
-      <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 3 · Demo</span>
-      <button type="button" class="gallery-next" aria-label="Next project media">→</button>
+      <button type="button" class="gallery-prev" aria-label="Previous project image">←</button>
+      <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 2 · Finished map</span>
+      <button type="button" class="gallery-next" aria-label="Next project image">→</button>
     </div>
+  </div>
   </div>
 </article>
 
@@ -210,7 +210,7 @@ html.no-gallery-js .gallery-slide[hidden]{display:block!important;margin-top:20p
 // Manual gallery: never advance while a visitor is watching or reading.
 document.querySelectorAll('.project-gallery').forEach(function (gallery) {
   var slides = Array.from(gallery.querySelectorAll('.gallery-slide'));
-  var labels = ['Demo', 'Finished map', 'System diagram'];
+  var labels = ['Finished map', 'System diagram'];
   var current = 0;
   function show(index) {
     slides[current].querySelectorAll('video').forEach(function (video) { video.pause(); });
@@ -332,7 +332,7 @@ document.querySelectorAll('.project-gallery').forEach(function (gallery) {
     c.classList.remove('edit');
     c.querySelectorAll('.project-gallery').forEach(function (gallery) {
       gallery.querySelectorAll('.gallery-slide').forEach(function (slide, i) { slide.hidden = i !== 0; });
-      gallery.querySelector('.gallery-count').textContent = '1 / 3 · Demo';
+      gallery.querySelector('.gallery-count').textContent = '1 / 2 · Finished map';
     });
     if (!c.getAttribute('class')) c.removeAttribute('class');
     c.querySelectorAll('[data-ui]').forEach(function (n) { n.remove(); });
