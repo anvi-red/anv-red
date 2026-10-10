@@ -246,18 +246,18 @@ header{position:relative}
   </figure>
   <div class="project-gallery" role="region" aria-roledescription="carousel" aria-label="Autonomous robot exploration images">
     <div class="gallery-stage">
-      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="1 of 2: Finished map">
-        <a href="media/turtlebot-map.png" target="_blank" rel="noopener" aria-label="Enlarge finished RViz map (opens in a new tab)"><img loading="lazy" src="media/turtlebot-map.png" alt="RViz map of the simulated arena, with nine cylindrical obstacles and navigation cost layers."></a>
-        <figcaption>The mapped environment in RViz. Click to enlarge ↗</figcaption>
-      </figure>
-      <figure class="gallery-slide" role="group" aria-roledescription="slide" aria-label="2 of 2: System architecture" hidden>
+      <figure class="gallery-slide" role="group" aria-roledescription="slide" data-label="System diagram" aria-label="1 of 2: System architecture">
         <a href="media/turtlebot-system.png" target="_blank" rel="noopener" aria-label="Enlarge system architecture diagram (opens in a new tab)"><img loading="lazy" src="media/turtlebot-system.png" alt="System diagram connecting Gazebo lidar and odometry, slam_toolbox mapping, the custom frontier exploration node, Nav2 navigation, and ros_gz_bridge velocity commands."></a>
         <figcaption>From lidar scans to frontier goals and motion. Click to enlarge ↗</figcaption>
+      </figure>
+      <figure class="gallery-slide" role="group" aria-roledescription="slide" data-label="Finished map" aria-label="2 of 2: Finished map" hidden>
+        <a href="media/turtlebot-map.png" target="_blank" rel="noopener" aria-label="Enlarge finished RViz map (opens in a new tab)"><img loading="lazy" src="media/turtlebot-map.png" alt="RViz map of the simulated arena, with nine cylindrical obstacles and navigation cost layers."></a>
+        <figcaption>The mapped environment in RViz. Click to enlarge ↗</figcaption>
       </figure>
     </div>
     <div class="gallery-controls" hidden>
       <button type="button" class="gallery-prev" aria-label="Previous project image">←</button>
-      <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 2 · Finished map</span>
+      <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 2 · System diagram</span>
       <button type="button" class="gallery-next" aria-label="Next project image">→</button>
     </div>
   </div>
