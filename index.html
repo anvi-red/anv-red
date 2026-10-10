@@ -207,7 +207,29 @@ header{position:relative}
     <p class="project-label">01 — MECHANICAL DESIGN</p><h3>Mechanical Gripper</h3><div class="metrics"><span><strong>47.5%</strong> mass reduction</span><span><strong>17.7 N</strong> grip force</span><span><strong>4.86×</strong> factor of safety</span></div>
     <p>A 3D-printed, nine-part parallel-jaw gripper producing 17.7&nbsp;N of grip force from a 6V servo through a three-gear, 1.5:1 reduction. A six-point parametric FEA study on jaw thickness and geometry cut mass by 47.5% while holding a 4.86&times; factor of safety, backed by a regression model predicting stress and displacement under load.</p>
     <p class="stack">Fusion 360 &middot; FEA &middot; 3D printing &middot; GD&amp;T &middot; ASME Y14.5</p>
-    <div class="media-row"></div>
+    <div class="media-row exploration-media">
+      <figure class="m exploration-video" style="width:20rem">
+        <video controls muted playsinline preload="metadata" aria-label="Mechanical gripper assembly and motion in Fusion" src="media/gripper-assembly.mp4"></video>
+        <figcaption>Gripper assembly and motion in Fusion.</figcaption>
+      </figure>
+      <div class="project-gallery" role="region" aria-roledescription="carousel" aria-label="Mechanical gripper FEA results">
+        <div class="gallery-stage">
+          <figure class="gallery-slide" data-label="Stress" role="group" aria-roledescription="slide" aria-label="1 of 2: Von Mises stress">
+            <a href="media/gripper-stress.png" target="_blank" rel="noopener" aria-label="Enlarge gripper stress plot (opens in a new tab)"><img loading="lazy" src="media/gripper-stress.png" alt="Fusion von Mises stress plot for the 8 mm cavity jaw under a 17.7 N load."></a>
+            <figcaption>Von Mises stress · 8 mm cavity jaw · 17.7 N load. Click to enlarge ↗</figcaption>
+          </figure>
+          <figure class="gallery-slide" data-label="Displacement" role="group" aria-roledescription="slide" aria-label="2 of 2: Total displacement" hidden>
+            <a href="media/gripper-displacement.png" target="_blank" rel="noopener" aria-label="Enlarge gripper displacement plot (opens in a new tab)"><img loading="lazy" src="media/gripper-displacement.png" alt="Fusion total displacement plot for the same 8 mm cavity jaw study, with its displacement color scale in millimeters."></a>
+            <figcaption>Total displacement · same 8 mm cavity jaw study. Click to enlarge ↗</figcaption>
+          </figure>
+        </div>
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-prev" aria-label="Previous gripper result">←</button>
+          <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 2 · Stress</span>
+          <button type="button" class="gallery-next" aria-label="Next gripper result">→</button>
+        </div>
+      </div>
+    </div>
   </article>
 
   
@@ -271,7 +293,7 @@ header{position:relative}
 // Manual gallery: never advance while a visitor is watching or reading.
 document.querySelectorAll('.project-gallery').forEach(function (gallery) {
   var slides = Array.from(gallery.querySelectorAll('.gallery-slide'));
-  var labels = ['Finished map', 'System diagram'];
+  var labels = slides.map(function (slide, i) { return slide.getAttribute('data-label') || ['Finished map', 'System diagram'][i]; });
   var current = 0;
   function show(index) {
     slides[current].querySelectorAll('video').forEach(function (video) { video.pause(); });
@@ -393,7 +415,9 @@ document.querySelectorAll('.project-gallery').forEach(function (gallery) {
     c.classList.remove('edit');
     c.querySelectorAll('.project-gallery').forEach(function (gallery) {
       gallery.querySelectorAll('.gallery-slide').forEach(function (slide, i) { slide.hidden = i !== 0; });
-      gallery.querySelector('.gallery-count').textContent = '1 / 2 · Finished map';
+      var slides = gallery.querySelectorAll('.gallery-slide');
+      var label = slides[0].getAttribute('data-label') || 'Finished map';
+      gallery.querySelector('.gallery-count').textContent = '1 / ' + slides.length + ' · ' + label;
     });
     if (!c.getAttribute('class')) c.removeAttribute('class');
     c.querySelectorAll('[data-ui]').forEach(function (n) { n.remove(); });
