@@ -139,8 +139,18 @@ header{position:relative}
 @media(max-width:1039px){#gantry-stacking-preview{right:0;width:300px}}
 @media(max-width:900px){#gantry-stacking-preview{display:none}}
 
+/* Scroll reveals preserve layout and native scrolling. */
+.scroll-reveal{transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
+.scroll-reveal.is-pending{opacity:0;transform:translateY(24px)}
+.scroll-reveal:focus-within{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.scroll-reveal,.scroll-reveal.is-pending{opacity:1;transform:none;transition:none}}
 </style>
-<noscript><style>.gallery-slide[hidden]{display:block!important;margin-top:20px}</style></noscript>
+<noscript><style>.gallery-slide[hidden]{display:block!important;margin-top:20px}/* Scroll reveals preserve layout and native scrolling. */
+.scroll-reveal{transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
+.scroll-reveal.is-pending{opacity:0;transform:translateY(24px)}
+.scroll-reveal:focus-within{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.scroll-reveal,.scroll-reveal.is-pending{opacity:1;transform:none;transition:none}}
+</style></noscript>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a><div class="wrap">
@@ -290,6 +300,30 @@ header{position:relative}
 
 <script>
 
+// Reveal each block once, leaving above-the-fold content visible.
+(function () {
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (location.hash === '#edit' || motion.matches || !('IntersectionObserver' in window)) return;
+  var blocks = document.querySelectorAll('main > section > h2, .pair > article, #projects > article, #background > dl, main > .contact');
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.remove('is-pending');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0, rootMargin: '0px 0px -36px 0px' });
+  blocks.forEach(function (block) {
+    if (block.getBoundingClientRect().top < window.innerHeight - 36) return;
+    block.classList.add('scroll-reveal', 'is-pending');
+    observer.observe(block);
+  });
+  function revealAll() {
+    observer.disconnect();
+    blocks.forEach(function (block) { block.classList.remove('is-pending'); });
+  }
+  motion.addEventListener('change', function (event) { if (event.matches) revealAll(); });
+  window.addEventListener('beforeprint', revealAll);
+})();
 // Manual gallery: never advance while a visitor is watching or reading.
 document.querySelectorAll('.project-gallery').forEach(function (gallery) {
   var slides = Array.from(gallery.querySelectorAll('.gallery-slide'));
@@ -413,6 +447,7 @@ document.querySelectorAll('.project-gallery').forEach(function (gallery) {
   function serialize() {
     var c = document.documentElement.cloneNode(true);
     c.classList.remove('edit');
+    c.querySelectorAll('.scroll-reveal').forEach(function (el) { el.classList.remove('scroll-reveal', 'is-pending'); });
     c.querySelectorAll('.project-gallery').forEach(function (gallery) {
       gallery.querySelectorAll('.gallery-slide').forEach(function (slide, i) { slide.hidden = i !== 0; });
       var slides = gallery.querySelectorAll('.gallery-slide');
