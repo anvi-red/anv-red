@@ -3,8 +3,9 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const html = readFileSync(resolve(root, 'index.html'), 'utf8');
 const fail = message => { throw new Error(message); };
+for (const page of ['index.html', 'communities.html']) {
+const html = readFileSync(resolve(root, page), 'utf8');
 if (!/<!doctype html>/i.test(html)) fail('HTML doctype missing.');
 if ((html.match(/<h1[\s>]/gi) || []).length !== 1) fail('Expected one main heading.');
 if (!html.includes('name="viewport"')) fail('Mobile viewport missing.');
@@ -25,4 +26,6 @@ for (const match of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
 for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
   if (!/\bsrc=/.test(match[1])) new Script(match[2]);
 }
-console.log('Portfolio checks passed: page structure, navigation, assets, and JavaScript.');
+}
+console.log('Portfolio and communities checks passed: page structure, navigation, assets, and JavaScript.');
+
