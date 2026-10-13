@@ -222,20 +222,25 @@ header{position:relative}
         <video controls muted playsinline preload="metadata" aria-label="Mechanical gripper assembly and motion in Fusion" src="media/gripper-assembly.mp4"></video>
         <figcaption>Gripper assembly and motion in Fusion.</figcaption>
       </figure>
-      <div class="project-gallery" role="region" aria-roledescription="carousel" aria-label="Mechanical gripper FEA results">
+      <div class="project-gallery" data-autoplay="5000" role="region" aria-roledescription="carousel" aria-label="Mechanical gripper prototype and FEA results">
         <div class="gallery-stage">
-          <figure class="gallery-slide" data-label="Stress" role="group" aria-roledescription="slide" aria-label="1 of 2: Von Mises stress">
+          <figure class="gallery-slide" data-label="Stress" role="group" aria-roledescription="slide" aria-label="1 of 3: Von Mises stress">
             <a href="media/gripper-stress-result.png" target="_blank" rel="noopener" aria-label="Enlarge gripper stress plot (opens in a new tab)"><img loading="lazy" src="media/gripper-stress-result.png" alt="Fusion von Mises stress plot of the gripper jaw, showing a maximum of 5.877 MPa."></a>
             <figcaption>Von Mises stress · max 5.877 MPa. Click to enlarge ↗</figcaption>
           </figure>
-          <figure class="gallery-slide" data-label="Displacement" role="group" aria-roledescription="slide" aria-label="2 of 2: Total displacement" hidden>
+          <figure class="gallery-slide" data-label="Displacement" role="group" aria-roledescription="slide" aria-label="2 of 3: Total displacement" hidden>
             <a href="media/gripper-displacement-result.png" target="_blank" rel="noopener" aria-label="Enlarge gripper displacement plot (opens in a new tab)"><img loading="lazy" src="media/gripper-displacement-result.png" alt="Fusion total displacement plot of the gripper jaw, showing a maximum of 0.352 mm."></a>
             <figcaption>Total displacement · max 0.352 mm. Click to enlarge ↗</figcaption>
+          </figure>
+          <figure class="gallery-slide" data-label="Prototype" role="group" aria-roledescription="slide" aria-label="3 of 3: Assembled gripper prototype" hidden>
+            <a href="media/gripper-prototype.jpg" target="_blank" rel="noopener" aria-label="Enlarge assembled gripper prototype photo (opens in a new tab)"><img loading="lazy" src="media/gripper-prototype.jpg" alt="Assembled pink gripper with meshing gears, linkages, and a servo motor."></a>
+            <figcaption>Assembled gripper prototype. Click to enlarge ↗</figcaption>
           </figure>
         </div>
         <div class="gallery-controls" hidden>
           <button type="button" class="gallery-prev" aria-label="Previous gripper result">←</button>
-          <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 2 · Stress</span>
+          <span class="gallery-count" aria-live="polite" aria-atomic="true">1 / 3 · Stress</span>
+          <button type="button" class="gallery-play" aria-label="Pause gripper slideshow">Ⅱ</button>
           <button type="button" class="gallery-next" aria-label="Next gripper result">→</button>
         </div>
       </div>
@@ -324,27 +329,56 @@ header{position:relative}
   motion.addEventListener('change', function (event) { if (event.matches) revealAll(); });
   window.addEventListener('beforeprint', revealAll);
 })();
-// Manual gallery: never advance while a visitor is watching or reading.
+// Galleries remain manual unless autoplay is explicitly enabled.
 document.querySelectorAll('.project-gallery').forEach(function (gallery) {
   var slides = Array.from(gallery.querySelectorAll('.gallery-slide'));
   var labels = slides.map(function (slide, i) { return slide.getAttribute('data-label') || ['Finished map', 'System diagram'][i]; });
   var current = 0;
+  var autoplay = Number(gallery.getAttribute('data-autoplay')) || 0;
+  var play = gallery.querySelector('.gallery-play');
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var stopped = motion.matches || location.hash === '#edit';
+  var visible = !('IntersectionObserver' in window);
+  var timer = null;
+  function syncTimer() {
+    if (timer !== null) clearInterval(timer);
+    timer = null;
+    if (!autoplay) return;
+    if (play) { play.textContent = stopped ? '▶' : 'Ⅱ'; play.setAttribute('aria-label', (stopped ? 'Play' : 'Pause') + ' gripper slideshow'); }
+    gallery.querySelector('.gallery-count').setAttribute('aria-live', stopped ? 'polite' : 'off');
+    if (!stopped && visible && !document.hidden && location.hash !== '#edit') timer = setInterval(function () { show(current + 1); }, autoplay);
+  }
+  function stop() { stopped = true; syncTimer(); }
+  function manual(index) { if (autoplay) stop(); show(index); }
   function show(index) {
     slides[current].querySelectorAll('video').forEach(function (video) { video.pause(); });
     current = (index + slides.length) % slides.length;
     slides.forEach(function (slide, i) { slide.hidden = i !== current; });
     gallery.querySelector('.gallery-count').textContent = (current + 1) + ' / ' + slides.length + ' · ' + labels[current];
   }
-  gallery.querySelector('.gallery-prev').addEventListener('click', function () { show(current - 1); });
-  gallery.querySelector('.gallery-next').addEventListener('click', function () { show(current + 1); });
+  gallery.querySelector('.gallery-prev').addEventListener('click', function () { manual(current - 1); });
+  gallery.querySelector('.gallery-next').addEventListener('click', function () { manual(current + 1); });
   gallery.addEventListener('keydown', function (event) {
     if (event.target.tagName === 'VIDEO' || event.target.isContentEditable) return;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      event.preventDefault(); show(current + (event.key === 'ArrowLeft' ? -1 : 1));
+      event.preventDefault(); manual(current + (event.key === 'ArrowLeft' ? -1 : 1));
     }
   });
   show(0);
   gallery.querySelector('.gallery-controls').hidden = false;
+  if (autoplay) {
+    if (play) play.addEventListener('click', function () { stopped = !stopped; syncTimer(); });
+    gallery.addEventListener('focusin', function (event) { if (event.target !== play) stop(); });
+    gallery.querySelectorAll('.gallery-slide a').forEach(function (link) { link.addEventListener('click', stop); });
+    document.addEventListener('visibilitychange', syncTimer);
+    window.addEventListener('hashchange', function () { if (location.hash === '#edit') stop(); });
+    motion.addEventListener('change', function (event) { if (event.matches) stop(); });
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; syncTimer(); }, {threshold:0.15});
+      observer.observe(gallery);
+    }
+    syncTimer();
+  }
 });
 
 /* Edit mode: open this page with #edit on the end of the address.
@@ -493,4 +527,5 @@ document.querySelectorAll('.project-gallery').forEach(function (gallery) {
 </script>
 </body>
 </html>
+
 
