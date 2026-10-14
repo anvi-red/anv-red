@@ -144,6 +144,9 @@ header{position:relative}
 .scroll-reveal.is-pending{opacity:0;transform:translateY(24px)}
 .scroll-reveal:focus-within{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.scroll-reveal,.scroll-reveal.is-pending{opacity:1;transform:none;transition:none}}
+.pair .current-points{margin:0 0 1.4rem;padding-left:1.2rem;color:var(--muted);font-size:14px;line-height:1.7}
+.pair .current-points li{padding-left:.2rem;margin-bottom:.65rem}
+.pair .current-points li:last-child{margin-bottom:0}
 </style>
 <noscript><style>.gallery-slide[hidden]{display:block!important;margin-top:20px}/* Scroll reveals preserve layout and native scrolling. */
 .scroll-reveal{transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
@@ -194,14 +197,21 @@ header{position:relative}
   <div class="pair">
     <article>
       <h3>Derek Hoiem Computer Vision Lab <span class="tag">In progress</span></h3>
-      <p>Investigating vision-language-action and world action models, including π0.5 and DreamZero, as potential backbones for robot self-learning. Working with data generated in simulation environments and ALOHA rollouts, using vision-language models to identify partially successful sub-trajectories and assign rewards, even within failed rollouts.</p>
+      <ul class="current-points">
+        <li>Investigating vision-language-action and world action models, including π0.5 and DreamZero, as potential backbones for robot self-learning.</li>
+        <li>Working with data generated in simulation environments and ALOHA rollouts, using vision-language models to identify partially successful sub-trajectories and assign rewards, even within failed rollouts.</li>
+      </ul>
       <div class="media-row">
         <figure class="m" style="width:100%"><video controls loop muted playsinline preload="metadata" aria-label="ALOHA robot rollout research demonstration" src="media/vla-aloha-rollouts.mp4"></video></figure>
       </div>
     </article>
     <article>
       <h3>SigRobotics <span class="tag">In progress</span></h3>
-      <p>Designing a mechanical hand for the K1 Booster humanoid.</p>
+      <ul class="current-points">
+        <li>Designing a tendon-driven robotic hand with four fully articulated fingers, targeting 16 joint degrees of freedom for flexion, extension, and abduction.</li>
+        <li>Exploring compliant, 3D-printable mechanisms with motor and sensor integration for the K1 Booster humanoid.</li>
+        <li>Developing test setups to evaluate finger motion, grip performance, and compliance under varying payloads.</li>
+      </ul>
       <div class="media-row">
         <figure class="m" style="width:100%"><img src="media/hand-under-construction.png" alt="This section is under construction. Check back soon."></figure>
       </div>
@@ -391,7 +401,7 @@ document.querySelectorAll('.project-gallery').forEach(function (gallery) {
   root.classList.add('edit');
 
   var dirty = false;
-  var EDITABLE = 'h1,h2,h3,h4,p,.tag,dt,dd,.links a';
+  var EDITABLE = 'h1,h2,h3,h4,p,.current-points li,.tag,dt,dd,.links a';
   document.querySelectorAll(EDITABLE).forEach(function (el) {
     el.setAttribute('contenteditable', 'true');
   });
@@ -527,6 +537,7 @@ document.querySelectorAll('.project-gallery').forEach(function (gallery) {
 </script>
 </body>
 </html>
+
 
 
 
